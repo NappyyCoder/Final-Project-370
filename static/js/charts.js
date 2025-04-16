@@ -6,6 +6,11 @@ const height = 400 - margin.top - margin.bottom;
 // Global state for filtered data
 let globalData = [];
 
+// Add at the top with other configurations
+const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
 // Create responsive chart wrapper
 function createResponsiveChart(containerId) {
     const container = d3.select(containerId);
@@ -54,7 +59,7 @@ function createPublisherChart(data) {
     svg.append("g")
         .call(d3.axisLeft(y));
 
-    // Add bars with animation
+    // Add interactive bars
     svg.selectAll("rect")
         .data(topPublishers)
         .enter()
@@ -63,6 +68,21 @@ function createPublisherChart(data) {
         .attr("y", height)
         .attr("width", x.bandwidth())
         .attr("fill", "#69b3a2")
+        .on("mouseover", function (event, d) {
+            d3.select(this).attr("fill", "#28756c");
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html(`Publisher: ${d.name}<br/>Sales: ${d.value.toFixed(2)}M`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function () {
+            d3.select(this).attr("fill", "#69b3a2");
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        })
         .transition()
         .duration(800)
         .attr("y", d => y(d.value))
@@ -213,3 +233,26 @@ window.addEventListener('resize', function () {
     createGenreChart(globalData);
     createTimelineChart(globalData);
 });
+
+// Add filter controls
+function addFilterControls() {
+    const filterDiv = d3.select("#filters")
+        .append("div")
+        .attr("class", "filter-controls");
+
+    filterDiv.append("label")
+        .text("Filter by Year: ");
+
+    filterDiv.append("select")
+        .attr("id", "yearFilter")
+        .on("change", function () {
+            const selectedYear = this.value;
+            const filteredData = selectedYear === "all"
+                ? globalData
+                : globalData.filter(d => d.Year === selectedYear);
+
+            createPublisherChart(filteredData);
+            createGenreChart(filteredData);
+            createTimelineChart(filteredData);
+        });
+}
