@@ -169,24 +169,28 @@ function createTimelineChart(data) {
 }
 
 // Load data and create visualizations
-d3.csv("data/vgsales.csv").then(function (data) {
-    globalData = data;
+d3.csv("data/vgsales.csv")
+    .then(function (data) {
+        console.log("Data loaded successfully:", data.length, "rows"); // Debug log
+        globalData = data;
 
-    // Convert sales columns to numbers
-    data.forEach(d => {
-        d.Global_Sales = +d.Global_Sales;
-        d.NA_Sales = +d.NA_Sales;
-        d.EU_Sales = +d.EU_Sales;
-        d.JP_Sales = +d.JP_Sales;
-        d.Other_Sales = +d.Other_Sales;
+        // Convert sales columns to numbers
+        data.forEach(d => {
+            d.Global_Sales = +d.Global_Sales;
+            d.NA_Sales = +d.NA_Sales;
+            d.EU_Sales = +d.EU_Sales;
+            d.JP_Sales = +d.JP_Sales;
+            d.Other_Sales = +d.Other_Sales;
+        });
+
+        createPublisherChart(data);
+        createGenreChart(data);
+        createTimelineChart(data);
+    })
+    .catch(function (error) {
+        console.error("Detailed error loading the data:", error);
+        console.log("Current path:", window.location.href); // Debug log
     });
-
-    createPublisherChart(data);
-    createGenreChart(data);
-    createTimelineChart(data);
-}).catch(function (error) {
-    console.error("Error loading the data:", error);
-});
 
 // Add event listeners for responsiveness
 window.addEventListener('resize', function () {
