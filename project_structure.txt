@@ -1,0 +1,14 @@
+
+data_story_project/
+├── data/                  # Raw and processed datasets
+├── analysis/             # Python notebooks/scripts
+│   ├── data_processing.py
+│   └── analysis.ipynb
+├── static/              # Static assets
+│   ├── css/
+│   │   └── styles.css
+│   └── js/
+│       ├── charts.js
+│       └── animations.js
+├── index.html           # Main webpage
+└── README.md           # Project documentation
