@@ -169,28 +169,43 @@ function createTimelineChart(data) {
 }
 
 // Load data and create visualizations
-d3.csv("data/vgsales.csv")
-    .then(function (data) {
-        console.log("Data loaded successfully:", data.length, "rows"); // Debug log
-        globalData = data;
+// Try loading data with different paths to debug
+Promise.all([
+    d3.csv("data/vgsales.csv").catch(() => null),
+    d3.csv("../data/vgsales.csv").catch(() => null),
+    d3.csv("/Final-Project-370/data/vgsales.csv").catch(() => null)
+]).then(([result1, result2, result3]) => {
+    console.log("Trying path 'data/vgsales.csv':", result1 ? "Success" : "Failed");
+    console.log("Trying path '../data/vgsales.csv':", result2 ? "Success" : "Failed");
+    console.log("Trying path '/Final-Project-370/data/vgsales.csv':", result3 ? "Success" : "Failed");
 
-        // Convert sales columns to numbers
-        data.forEach(d => {
-            d.Global_Sales = +d.Global_Sales;
-            d.NA_Sales = +d.NA_Sales;
-            d.EU_Sales = +d.EU_Sales;
-            d.JP_Sales = +d.JP_Sales;
-            d.Other_Sales = +d.Other_Sales;
-        });
+    // Use the first successful result
+    const data = result1 || result2 || result3;
 
-        createPublisherChart(data);
-        createGenreChart(data);
-        createTimelineChart(data);
-    })
-    .catch(function (error) {
-        console.error("Detailed error loading the data:", error);
-        console.log("Current path:", window.location.href); // Debug log
+    if (!data) {
+        throw new Error("Could not load data from any path");
+    }
+
+    console.log("Data loaded successfully:", data.length, "rows");
+    globalData = data;
+
+    // Convert sales columns to numbers
+    data.forEach(d => {
+        d.Global_Sales = +d.Global_Sales;
+        d.NA_Sales = +d.NA_Sales;
+        d.EU_Sales = +d.EU_Sales;
+        d.JP_Sales = +d.JP_Sales;
+        d.Other_Sales = +d.Other_Sales;
     });
+
+    createPublisherChart(data);
+    createGenreChart(data);
+    createTimelineChart(data);
+}).catch(error => {
+    console.error("Detailed error loading the data:", error);
+    console.log("Current URL:", window.location.href);
+    console.log("Current path:", window.location.pathname);
+});
 
 // Add event listeners for responsiveness
 window.addEventListener('resize', function () {
