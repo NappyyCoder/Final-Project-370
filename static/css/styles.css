@@ -107,3 +107,27 @@ svg {
         gap: 0.5rem;
     }
 }
+
+.tooltip {
+    position: absolute;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.filter-controls {
+    margin: 20px 0;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-controls select {
+    margin-left: 10px;
+    padding: 5px;
+    border-radius: 4px;
+}
