@@ -1,7 +1,7 @@
 // Chart configurations
-const margin = { top: 60, right: 40, bottom: 80, left: 90 };
-const width = 1100 - margin.left - margin.right;  // Increased from 900
-const height = 600 - margin.top - margin.bottom;  // Increased from 500
+const margin = { top: 80, right: 100, bottom: 80, left: 90 };  // Increased right margin
+const width = 1100 - margin.left - margin.right;
+const height = 600 - margin.top - margin.bottom;
 
 // Global state for filtered data
 let globalData = [];
@@ -163,12 +163,12 @@ function createGenreChart(data) {
 
     // Create scales
     const x = d3.scaleLinear()
-        .domain([0, d3.max(genreArray, d => d.count)])
+        .domain([0, d3.max(genreArray, d => d.count) * 1.1]) // Add 10% padding
         .range([0, width])
         .nice();
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max(genreArray, d => d.sales)])
+        .domain([0, d3.max(genreArray, d => d.sales) * 1.1]) // Add 10% padding
         .range([height, 0])
         .nice();
 
@@ -216,8 +216,20 @@ function createGenreChart(data) {
         .style("stroke-dasharray", "3,3")
         .style("stroke-opacity", 0.2);
 
-    // Add scatter points
-    svg.selectAll("circle")
+    // Add clipping path to ensure points don't overflow
+    svg.append("defs")
+        .append("clipPath")
+        .attr("id", "chart-area")
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height);
+
+    // Apply clipping path to the plot area
+    const plotArea = svg.append("g")
+        .attr("clip-path", "url(#chart-area)");
+
+    // Move the points into the clipped plot area
+    plotArea.selectAll("circle")
         .data(genreArray)
         .enter()
         .append("circle")
@@ -265,7 +277,20 @@ function createGenreChart(data) {
         .attr("class", "genre-label")
         .attr("x", d => x(d.count))
         .attr("y", d => y(d.sales) - 15)
-        .attr("text-anchor", "middle")
+        .attr("text-anchor", function (d) {
+            // Adjust text anchor based on position to prevent cutoff
+            const xPos = x(d.count);
+            if (xPos < width * 0.1) return "start";
+            if (xPos > width * 0.9) return "end";
+            return "middle";
+        })
+        .attr("dx", function (d) {
+            // Add horizontal offset based on position
+            const xPos = x(d.count);
+            if (xPos < width * 0.1) return "5";
+            if (xPos > width * 0.9) return "-5";
+            return "0";
+        })
         .style("font-size", "12px")
         .style("fill", "#666")
         .text(d => d.name);
