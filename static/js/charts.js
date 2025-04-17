@@ -139,46 +139,50 @@ function createPublisherChart(data) {
         .attr("height", d => height - y(d.value));
 }
 
-// Chart 2: Genre Distribution Horizontal Bar Chart with Percentage
+// Chart 2: Genre Distribution Scatter Plot with Animation
 function createGenreChart(data) {
     const svg = createResponsiveChart("#visualization-2");
 
     // Aggregate sales by genre
     const genreData = d3.rollup(data,
-        v => d3.sum(v, d => d.Global_Sales),
+        v => ({
+            sales: d3.sum(v, d => d.Global_Sales),
+            count: v.length,
+            avgRating: d3.mean(v, d => d.Global_Sales)
+        }),
         d => d.Genre
     );
 
     // Convert to array and calculate percentages
-    const total = d3.sum(Array.from(genreData.values()));
-    const genreArray = Array.from(genreData, ([name, value]) => ({
+    const total = d3.sum(Array.from(genreData.values()), d => d.sales);
+    const genreArray = Array.from(genreData, ([name, values]) => ({
         name,
-        value,
-        percentage: (value / total) * 100
-    }))
-        .sort((a, b) => b.value - a.value); // Sort by value descending
+        sales: values.sales,
+        count: values.count,
+        percentage: (values.sales / total) * 100,
+        radius: Math.sqrt(values.sales) * 3 // Scale radius based on sales
+    })).sort((a, b) => b.sales - a.sales);
 
     // Scales
-    const y = d3.scaleBand()
-        .range([0, height])
-        .domain(genreArray.map(d => d.name))
-        .padding(0.2);
-
     const x = d3.scaleLinear()
         .range([0, width])
-        .domain([0, d3.max(genreArray, d => d.value)]);
+        .domain([0, d3.max(genreArray, d => d.count)]);
 
-    // Add Y axis
-    svg.append("g")
-        .call(d3.axisLeft(y))
-        .selectAll("text")
-        .style("font-size", "12px");
+    const y = d3.scaleLinear()
+        .range([height, 0])
+        .domain([0, d3.max(genreArray, d => d.sales)]);
 
     // Add X axis
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x)
             .ticks(5)
+            .tickFormat(d => d))
+        .style("font-size", "12px");
+
+    // Add Y axis
+    svg.append("g")
+        .call(d3.axisLeft(y)
             .tickFormat(d => d + "M"))
         .style("font-size", "12px");
 
@@ -188,82 +192,114 @@ function createGenreChart(data) {
         .attr("text-anchor", "middle")
         .attr("x", width / 2)
         .attr("y", height + margin.bottom - 10)
+        .text("Number of Games")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
+    // Add Y axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 20)
+        .attr("x", -height / 2)
         .text("Global Sales (Millions)")
         .style("font-size", "14px")
         .style("font-weight", "600");
 
-    // Create gradient for bars
+    // Add grid lines
+    svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(y)
+            .tickSize(-width)
+            .tickFormat("")
+            .ticks(8))
+        .style("stroke-dasharray", "3,3")
+        .style("stroke-opacity", 0.2);
+
+    // Create gradient for circles
     const gradient = svg.append("defs")
-        .append("linearGradient")
+        .append("radialGradient")
         .attr("id", "genre-gradient")
-        .attr("x1", "0%")
-        .attr("x2", "100%")
-        .attr("y1", "0%")
-        .attr("y2", "0%");
+        .attr("cx", "50%")
+        .attr("cy", "50%")
+        .attr("r", "50%");
 
     gradient.append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", "#8B0000");  // Dark Red
+        .attr("stop-color", "#FF3333");
 
     gradient.append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", "#FF3333");  // Bright Red
+        .attr("stop-color", "#8B0000");
 
-    // Add bars with animation
-    const bars = svg.selectAll("rect")
+    // Add bubbles with animation
+    const circles = svg.selectAll("circle")
         .data(genreArray)
         .enter()
-        .append("rect")
-        .attr("y", d => y(d.name))
-        .attr("height", y.bandwidth())
-        .attr("x", 0)
-        .attr("width", 0) // Start with width 0 for animation
-        .attr("fill", "url(#genre-gradient)")
-        .attr("rx", 4) // Rounded corners
-        .attr("ry", 4);
+        .append("circle")
+        .attr("cx", d => x(d.count))
+        .attr("cy", height) // Start from bottom
+        .attr("r", 0) // Start with radius 0
+        .style("fill", "url(#genre-gradient)")
+        .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.2))")
+        .style("opacity", 0.8);
 
-    // Add value labels
-    const labels = svg.selectAll(".value-label")
+    // Add labels
+    const labels = svg.selectAll(".genre-label")
         .data(genreArray)
         .enter()
         .append("text")
-        .attr("class", "value-label")
-        .attr("y", d => y(d.name) + y.bandwidth() / 2)
-        .attr("x", d => x(d.value) + 5)
-        .attr("dy", ".35em")
+        .attr("class", "genre-label")
+        .attr("x", d => x(d.count))
+        .attr("y", height)
+        .attr("text-anchor", "middle")
         .style("font-size", "12px")
         .style("fill", "#666")
-        .text(d => `${d.percentage.toFixed(1)}%`);
+        .style("opacity", 0)
+        .text(d => d.name);
+
+    // Animate bubbles
+    circles.transition()
+        .duration(1000)
+        .delay((d, i) => i * 100)
+        .attr("cy", d => y(d.sales))
+        .attr("r", d => d.radius)
+        .ease(d3.easeBounceOut);
+
+    // Animate labels
+    labels.transition()
+        .duration(1000)
+        .delay((d, i) => i * 100 + 500)
+        .attr("y", d => y(d.sales) - d.radius - 5)
+        .style("opacity", 1);
 
     // Add hover effects
-    bars.on("mouseover", function (event, d) {
+    circles.on("mouseover", function (event, d) {
         d3.select(this)
             .transition()
             .duration(200)
-            .attr("fill", "#2471A3");
+            .style("fill", "#FF3333")
+            .attr("r", d.radius * 1.2);
 
         tooltip.transition()
             .duration(200)
             .style("opacity", .9);
-        tooltip.html(`Genre: ${d.name}<br>Sales: ${d.value.toFixed(2)}M<br>Share: ${d.percentage.toFixed(1)}%`)
+        tooltip.html(`Genre: ${d.name}<br>Games: ${d.count}<br>Sales: ${d.sales.toFixed(2)}M<br>Market Share: ${d.percentage.toFixed(1)}%`)
             .style("left", (event.pageX + 10) + "px")
             .style("top", (event.pageY - 28) + "px");
     })
-        .on("mouseout", function () {
+        .on("mouseout", function (event, d) {
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("fill", "url(#genre-gradient)");
+                .style("fill", "url(#genre-gradient)")
+                .attr("r", d.radius);
 
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
         });
-
-    // Animate bars
-    bars.transition()
-        .duration(800)
-        .attr("width", d => x(d.value));
 
     // Add title
     svg.append("text")
@@ -273,18 +309,7 @@ function createGenreChart(data) {
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text("Video Game Sales Distribution by Genre");
-
-    // Add grid lines
-    svg.append("g")
-        .attr("class", "grid")
-        .call(d3.axisBottom(x)
-            .tickSize(height)
-            .tickFormat("")
-            .ticks(5))
-        .style("stroke-dasharray", "3,3")
-        .style("stroke-opacity", 0.2)
-        .attr("transform", `translate(0,0)`);
+        .text("Video Game Genre Distribution");
 }
 
 // Chart 3: Sales Trend Over Time
