@@ -34,7 +34,8 @@ body {
 /* Container for better responsiveness */
 .container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1400px;
+    /* Increased from 1200px */
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -83,7 +84,8 @@ nav a:hover {
 }
 
 main {
-    max-width: 1200px;
+    max-width: 1400px;
+    /* Increased from 1200px */
     margin: 2rem auto;
     padding: 0 clamp(1rem, 5vw, 2rem);
 }
@@ -91,8 +93,10 @@ main {
 .visualization {
     background: var(--card-background);
     border-radius: 15px;
-    padding: clamp(1.5rem, 4vw, 3rem);
-    margin: 2rem 0;
+    padding: clamp(2rem, 5vw, 4rem);
+    /* Increased padding */
+    margin: 3rem 0;
+    /* Increased margin */
     box-shadow: var(--shadow);
     transition: transform 0.3s ease;
     overflow: hidden;
@@ -158,11 +162,14 @@ main {
 
 .chart-container {
     width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    min-height: 600px;
+    /* Set minimum height */
+    overflow: visible;
+    /* Changed from auto to visible */
     background: linear-gradient(to bottom right, #fff, #fff5f5);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 1.5rem;
+    margin: 1rem 0;
 }
 
 /* Chart Responsive Styles */

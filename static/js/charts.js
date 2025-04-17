@@ -1,7 +1,7 @@
 // Chart configurations
-const margin = { top: 50, right: 30, bottom: 70, left: 80 };
-const width = 900 - margin.left - margin.right;
-const height = 500 - margin.top - margin.bottom;
+const margin = { top: 60, right: 40, bottom: 80, left: 90 };
+const width = 1100 - margin.left - margin.right;  // Increased from 900
+const height = 600 - margin.top - margin.bottom;  // Increased from 500
 
 // Global state for filtered data
 let globalData = [];
@@ -18,6 +18,7 @@ function createResponsiveChart(containerId) {
 
     const svg = container.append("svg")
         .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .attr("preserveAspectRatio", "xMidYMid meet")
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
