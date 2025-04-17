@@ -184,13 +184,24 @@ svg {
 }
 
 .tooltip {
-    background-color: rgba(139, 0, 0, 0.9);
+    position: absolute;
+    background-color: rgba(51, 51, 51, 0.95);
     color: white;
-    padding: 8px 12px;
+    padding: 10px 15px;
     border-radius: 6px;
-    font-size: clamp(0.8rem, 2vw, 0.9rem);
-    max-width: min(200px, 80vw);
-    box-shadow: 0 2px 4px rgba(139, 0, 0, 0.2);
+    font-size: 14px;
+    pointer-events: none;
+    max-width: 250px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    line-height: 1.4;
+}
+
+.tooltip strong {
+    color: #FF9999;
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
 }
 
 /* Media Queries */
