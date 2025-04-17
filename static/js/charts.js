@@ -33,6 +33,33 @@ const chartColors = {
     neutral: '#FFE5E5'       // Light Red
 };
 
+// Add this helper function at the top of your file
+function positionTooltip(event, tooltip) {
+    const tooltipWidth = 200;  // Approximate width of tooltip
+    const tooltipHeight = 100; // Approximate height of tooltip
+    const padding = 10;        // Padding from cursor
+
+    // Get the current viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Calculate tooltip position
+    let left = event.pageX + padding;
+    let top = event.pageY - tooltipHeight - padding;
+
+    // If tooltip would extend beyond right edge of viewport
+    if (left + tooltipWidth > viewportWidth) {
+        left = event.pageX - tooltipWidth - padding;
+    }
+
+    // If tooltip would extend beyond top of viewport
+    if (top < 0) {
+        top = event.pageY + padding;
+    }
+
+    return { left, top };
+}
+
 // Chart 1: Top Publishers Bar Chart
 function createPublisherChart(data) {
     const svg = createResponsiveChart("#visualization-1");
@@ -119,13 +146,22 @@ function createPublisherChart(data) {
         .attr("rx", 4) // Rounded corners
         .style("filter", "drop-shadow(0 2px 2px rgba(0,0,0,0.1))")
         .on("mouseover", function (event, d) {
-            d3.select(this).attr("fill", "#CC0000");  // Medium Red
+            const position = positionTooltip(event, tooltip);
+
+            d3.select(this)
+                .attr("fill", "#CC0000")
+                .style("cursor", "pointer");
+
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
-            tooltip.html(`Publisher: ${d.name}<br/>Sales: ${d.value.toFixed(2)}M`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+            tooltip.html(`
+                <strong>${d.name}</strong><br/>
+                Global Sales: ${d.value.toFixed(2)}M<br/>
+                Market Share: ${(d.value / d3.sum(topPublishers, p => p.value) * 100).toFixed(1)}%
+            `)
+                .style("left", `${position.left}px`)
+                .style("top", `${position.top}px`);
         })
         .on("mouseout", function () {
             d3.select(this).attr("fill", chartColors.primary);
@@ -241,6 +277,8 @@ function createGenreChart(data) {
         .style("stroke", "#8B0000")
         .style("stroke-width", 1)
         .on("mouseover", function (event, d) {
+            const position = positionTooltip(event, tooltip);
+
             d3.select(this)
                 .transition()
                 .duration(200)
@@ -250,12 +288,15 @@ function createGenreChart(data) {
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
-            tooltip.html(`Genre: ${d.name}<br>` +
-                `Total Sales: ${d.sales.toFixed(2)}M<br>` +
-                `Number of Games: ${d.count}<br>` +
-                `Avg Sales per Game: ${d.avgSales.toFixed(2)}M`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+            tooltip.html(`
+                <strong>${d.name}</strong><br/>
+                Total Sales: ${d.sales.toFixed(2)}M<br/>
+                Number of Games: ${d.count}<br/>
+                Avg Sales/Game: ${d.avgSales.toFixed(2)}M<br/>
+                Market Share: ${(d.sales / d3.sum(genreArray, g => g.sales) * 100).toFixed(1)}%
+            `)
+                .style("left", `${position.left}px`)
+                .style("top", `${position.top}px`);
         })
         .on("mouseout", function () {
             d3.select(this)
@@ -437,6 +478,43 @@ function createTimelineChart(data) {
         .transition()
         .duration(2000)
         .attr("stroke-dashoffset", 0);
+
+    svg.selectAll(".dot")
+        .data(timelineData)
+        .enter()
+        .append("circle")
+        .attr("cx", d => x(+d.year))
+        .attr("cy", d => y(d.sales))
+        .attr("r", 5)
+        .style("fill", chartColors.primary)
+        .on("mouseover", function (event, d) {
+            const position = positionTooltip(event, tooltip);
+
+            d3.select(this)
+                .attr("r", 7)
+                .style("opacity", 1)
+                .style("cursor", "pointer");
+
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html(`
+                <strong>Year: ${d.year}</strong><br/>
+                Total Sales: ${d.sales.toFixed(2)}M<br/>
+                Games Released: ${d.count}<br/>
+                Avg Sales/Game: ${(d.sales / d.count).toFixed(2)}M
+            `)
+                .style("left", `${position.left}px`)
+                .style("top", `${position.top}px`);
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .attr("r", 5)
+                .style("opacity", 1);
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
 }
 
 // Load data with absolute path for GitHub Pages
