@@ -139,45 +139,44 @@ function createPublisherChart(data) {
         .attr("height", d => height - y(d.value));
 }
 
-// Chart 2: Genre Distribution Scatter Plot with Animation
+// Chart 2: Genre Distribution Scatter Plot
 function createGenreChart(data) {
     const svg = createResponsiveChart("#visualization-2");
 
-    // Aggregate sales by genre
+    // Aggregate data by genre
     const genreData = d3.rollup(data,
         v => ({
             sales: d3.sum(v, d => d.Global_Sales),
             count: v.length,
-            avgRating: d3.mean(v, d => d.Global_Sales)
+            avgSales: d3.mean(v, d => d.Global_Sales)
         }),
         d => d.Genre
     );
 
-    // Convert to array and calculate percentages
-    const total = d3.sum(Array.from(genreData.values()), d => d.sales);
+    // Convert to array format
     const genreArray = Array.from(genreData, ([name, values]) => ({
         name,
         sales: values.sales,
         count: values.count,
-        percentage: (values.sales / total) * 100,
-        radius: Math.sqrt(values.sales) * 3 // Scale radius based on sales
-    })).sort((a, b) => b.sales - a.sales);
+        avgSales: values.avgSales
+    }));
 
-    // Scales
+    // Create scales
     const x = d3.scaleLinear()
+        .domain([0, d3.max(genreArray, d => d.count)])
         .range([0, width])
-        .domain([0, d3.max(genreArray, d => d.count)]);
+        .nice();
 
     const y = d3.scaleLinear()
+        .domain([0, d3.max(genreArray, d => d.sales)])
         .range([height, 0])
-        .domain([0, d3.max(genreArray, d => d.sales)]);
+        .nice();
 
     // Add X axis
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x)
-            .ticks(5)
-            .tickFormat(d => d))
+            .ticks(5))
         .style("font-size", "12px");
 
     // Add Y axis
@@ -213,93 +212,63 @@ function createGenreChart(data) {
         .call(d3.axisLeft(y)
             .tickSize(-width)
             .tickFormat("")
-            .ticks(8))
+        )
         .style("stroke-dasharray", "3,3")
         .style("stroke-opacity", 0.2);
 
-    // Create gradient for circles
-    const gradient = svg.append("defs")
-        .append("radialGradient")
-        .attr("id", "genre-gradient")
-        .attr("cx", "50%")
-        .attr("cy", "50%")
-        .attr("r", "50%");
-
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#FF3333");
-
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#8B0000");
-
-    // Add bubbles with animation
-    const circles = svg.selectAll("circle")
+    // Add scatter points
+    svg.selectAll("circle")
         .data(genreArray)
         .enter()
         .append("circle")
         .attr("cx", d => x(d.count))
-        .attr("cy", height) // Start from bottom
-        .attr("r", 0) // Start with radius 0
-        .style("fill", "url(#genre-gradient)")
-        .style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.2))")
-        .style("opacity", 0.8);
-
-    // Add labels
-    const labels = svg.selectAll(".genre-label")
-        .data(genreArray)
-        .enter()
-        .append("text")
-        .attr("class", "genre-label")
-        .attr("x", d => x(d.count))
-        .attr("y", height)
-        .attr("text-anchor", "middle")
-        .style("font-size", "12px")
-        .style("fill", "#666")
-        .style("opacity", 0)
-        .text(d => d.name);
-
-    // Animate bubbles
-    circles.transition()
-        .duration(1000)
-        .delay((d, i) => i * 100)
         .attr("cy", d => y(d.sales))
-        .attr("r", d => d.radius)
-        .ease(d3.easeBounceOut);
-
-    // Animate labels
-    labels.transition()
-        .duration(1000)
-        .delay((d, i) => i * 100 + 500)
-        .attr("y", d => y(d.sales) - d.radius - 5)
-        .style("opacity", 1);
-
-    // Add hover effects
-    circles.on("mouseover", function (event, d) {
-        d3.select(this)
-            .transition()
-            .duration(200)
-            .style("fill", "#FF3333")
-            .attr("r", d.radius * 1.2);
-
-        tooltip.transition()
-            .duration(200)
-            .style("opacity", .9);
-        tooltip.html(`Genre: ${d.name}<br>Games: ${d.count}<br>Sales: ${d.sales.toFixed(2)}M<br>Market Share: ${d.percentage.toFixed(1)}%`)
-            .style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY - 28) + "px");
-    })
-        .on("mouseout", function (event, d) {
+        .attr("r", 8)
+        .style("fill", "#CC0000")
+        .style("opacity", 0.7)
+        .style("stroke", "#8B0000")
+        .style("stroke-width", 1)
+        .on("mouseover", function (event, d) {
             d3.select(this)
                 .transition()
                 .duration(200)
-                .style("fill", "url(#genre-gradient)")
-                .attr("r", d.radius);
+                .attr("r", 10)
+                .style("opacity", 1);
+
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html(`Genre: ${d.name}<br>` +
+                `Total Sales: ${d.sales.toFixed(2)}M<br>` +
+                `Number of Games: ${d.count}<br>` +
+                `Avg Sales per Game: ${d.avgSales.toFixed(2)}M`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("r", 8)
+                .style("opacity", 0.7);
 
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
         });
+
+    // Add labels for each point
+    svg.selectAll("text.genre-label")
+        .data(genreArray)
+        .enter()
+        .append("text")
+        .attr("class", "genre-label")
+        .attr("x", d => x(d.count))
+        .attr("y", d => y(d.sales) - 15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .style("fill", "#666")
+        .text(d => d.name);
 
     // Add title
     svg.append("text")
