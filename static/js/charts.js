@@ -1,7 +1,7 @@
 // Chart configurations
-const margin = { top: 40, right: 20, bottom: 50, left: 60 };
-const width = 800 - margin.left - margin.right;
-const height = 400 - margin.top - margin.bottom;
+const margin = { top: 50, right: 30, bottom: 70, left: 80 };
+const width = 900 - margin.left - margin.right;
+const height = 500 - margin.top - margin.bottom;
 
 // Global state for filtered data
 let globalData = [];
@@ -23,6 +23,14 @@ function createResponsiveChart(containerId) {
 
     return svg;
 }
+
+// Update chart colors and styles
+const chartColors = {
+    primary: '#8B0000',      // Dark Red
+    secondary: '#FF3333',    // Bright Red
+    accent: '#CC0000',       // Medium Red
+    neutral: '#FFE5E5'       // Light Red
+};
 
 // Chart 1: Top Publishers Bar Chart
 function createPublisherChart(data) {
@@ -48,16 +56,55 @@ function createPublisherChart(data) {
         .range([height, 0])
         .domain([0, d3.max(topPublishers, d => d.value)]);
 
-    // Add axes
+    // Add axes with labels
+    // X axis
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x))
         .selectAll("text")
         .attr("transform", "rotate(-45)")
-        .style("text-anchor", "end");
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .style("font-size", "12px");
 
+    // X axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 5)
+        .text("Publisher")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
+    // Y axis
     svg.append("g")
-        .call(d3.axisLeft(y));
+        .call(d3.axisLeft(y)
+            .ticks(8)
+            .tickFormat(d => d + "M"))
+        .style("font-size", "12px");
+
+    // Y axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 20)
+        .attr("x", -height / 2)
+        .text("Global Sales (Millions)")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
+    // Add title
+    svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .text("Top 10 Publishers by Global Sales");
 
     // Add interactive bars
     svg.selectAll("rect")
@@ -67,9 +114,11 @@ function createPublisherChart(data) {
         .attr("x", d => x(d.name))
         .attr("y", height)
         .attr("width", x.bandwidth())
-        .attr("fill", "#69b3a2")
+        .attr("fill", chartColors.primary)
+        .attr("rx", 4) // Rounded corners
+        .style("filter", "drop-shadow(0 2px 2px rgba(0,0,0,0.1))")
         .on("mouseover", function (event, d) {
-            d3.select(this).attr("fill", "#28756c");
+            d3.select(this).attr("fill", "#CC0000");  // Medium Red
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
@@ -78,7 +127,7 @@ function createPublisherChart(data) {
                 .style("top", (event.pageY - 28) + "px");
         })
         .on("mouseout", function () {
-            d3.select(this).attr("fill", "#69b3a2");
+            d3.select(this).attr("fill", chartColors.primary);
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
@@ -89,7 +138,7 @@ function createPublisherChart(data) {
         .attr("height", d => height - y(d.value));
 }
 
-// Chart 2: Sales by Genre Pie Chart
+// Chart 2: Genre Distribution Horizontal Bar Chart with Percentage
 function createGenreChart(data) {
     const svg = createResponsiveChart("#visualization-2");
 
@@ -99,41 +148,142 @@ function createGenreChart(data) {
         d => d.Genre
     );
 
-    const pieData = Array.from(genreData, ([name, value]) => ({ name, value }));
+    // Convert to array and calculate percentages
+    const total = d3.sum(Array.from(genreData.values()));
+    const genreArray = Array.from(genreData, ([name, value]) => ({
+        name,
+        value,
+        percentage: (value / total) * 100
+    }))
+        .sort((a, b) => b.value - a.value); // Sort by value descending
 
-    const radius = Math.min(width, height) / 2;
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
+    // Scales
+    const y = d3.scaleBand()
+        .range([0, height])
+        .domain(genreArray.map(d => d.name))
+        .padding(0.2);
 
-    const pie = d3.pie()
-        .value(d => d.value);
+    const x = d3.scaleLinear()
+        .range([0, width])
+        .domain([0, d3.max(genreArray, d => d.value)]);
 
-    const arc = d3.arc()
-        .innerRadius(0)
-        .outerRadius(radius);
+    // Add Y axis
+    svg.append("g")
+        .call(d3.axisLeft(y))
+        .selectAll("text")
+        .style("font-size", "12px");
 
-    // Move the center
-    const g = svg.append("g")
-        .attr("transform", `translate(${width / 2},${height / 2})`);
+    // Add X axis
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x)
+            .ticks(5)
+            .tickFormat(d => d + "M"))
+        .style("font-size", "12px");
 
-    // Add slices with animation
-    const path = g.selectAll("path")
-        .data(pie(pieData))
+    // Add X axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 10)
+        .text("Global Sales (Millions)")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
+    // Create gradient for bars
+    const gradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id", "genre-gradient")
+        .attr("x1", "0%")
+        .attr("x2", "100%")
+        .attr("y1", "0%")
+        .attr("y2", "0%");
+
+    gradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#8B0000");  // Dark Red
+
+    gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#FF3333");  // Bright Red
+
+    // Add bars with animation
+    const bars = svg.selectAll("rect")
+        .data(genreArray)
         .enter()
-        .append("path")
-        .attr("d", arc)
-        .attr("fill", d => color(d.data.name))
-        .attr("stroke", "white")
-        .style("stroke-width", "2px");
+        .append("rect")
+        .attr("y", d => y(d.name))
+        .attr("height", y.bandwidth())
+        .attr("x", 0)
+        .attr("width", 0) // Start with width 0 for animation
+        .attr("fill", "url(#genre-gradient)")
+        .attr("rx", 4) // Rounded corners
+        .attr("ry", 4);
 
-    // Add labels
-    const label = g.selectAll("text")
-        .data(pie(pieData))
+    // Add value labels
+    const labels = svg.selectAll(".value-label")
+        .data(genreArray)
         .enter()
         .append("text")
-        .attr("transform", d => `translate(${arc.centroid(d)})`)
+        .attr("class", "value-label")
+        .attr("y", d => y(d.name) + y.bandwidth() / 2)
+        .attr("x", d => x(d.value) + 5)
         .attr("dy", ".35em")
-        .style("text-anchor", "middle")
-        .text(d => d.data.name);
+        .style("font-size", "12px")
+        .style("fill", "#666")
+        .text(d => `${d.percentage.toFixed(1)}%`);
+
+    // Add hover effects
+    bars.on("mouseover", function (event, d) {
+        d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("fill", "#2471A3");
+
+        tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+        tooltip.html(`Genre: ${d.name}<br>Sales: ${d.value.toFixed(2)}M<br>Share: ${d.percentage.toFixed(1)}%`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+        .on("mouseout", function () {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("fill", "url(#genre-gradient)");
+
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+
+    // Animate bars
+    bars.transition()
+        .duration(800)
+        .attr("width", d => x(d.value));
+
+    // Add title
+    svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .text("Video Game Sales Distribution by Genre");
+
+    // Add grid lines
+    svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisBottom(x)
+            .tickSize(height)
+            .tickFormat("")
+            .ticks(5))
+        .style("stroke-dasharray", "3,3")
+        .style("stroke-opacity", 0.2)
+        .attr("transform", `translate(0,0)`);
 }
 
 // Chart 3: Sales Trend Over Time
@@ -158,13 +308,94 @@ function createTimelineChart(data) {
         .range([height, 0])
         .domain([0, d3.max(timelineData, d => d.sales)]);
 
-    // Add axes
+    // Add axes with labels
+    // X axis
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+        .call(d3.axisBottom(x)
+            .tickFormat(d3.format("d"))
+            .ticks(10))
+        .selectAll("text")
+        .style("font-size", "12px");
 
+    // X axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 10)
+        .text("Release Year")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
+    // Y axis
     svg.append("g")
-        .call(d3.axisLeft(y));
+        .call(d3.axisLeft(y)
+            .tickFormat(d => d + "M")
+            .ticks(8))
+        .style("font-size", "12px");
+
+    // Y axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 20)
+        .attr("x", -height / 2)
+        .text("Global Sales (Millions)")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
+    // Add title
+    svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .text("Video Game Sales Trend Over Time");
+
+    // Add grid lines for better readability
+    svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(y)
+            .tickSize(-width)
+            .tickFormat("")
+            .ticks(8))
+        .style("stroke-dasharray", "3,3")
+        .style("stroke-opacity", 0.2);
+
+    // Add gradient
+    const gradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id", "line-gradient")
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", 0)
+        .attr("y1", height)
+        .attr("x2", 0)
+        .attr("y2", 0);
+
+    gradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", chartColors.primary)
+        .attr("stop-opacity", 0.1);
+
+    gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", chartColors.primary)
+        .attr("stop-opacity", 1);
+
+    // Add area under the line
+    const area = d3.area()
+        .x(d => x(+d.year))
+        .y0(height)
+        .y1(d => y(d.sales));
+
+    svg.append("path")
+        .datum(timelineData)
+        .attr("fill", "url(#line-gradient)")
+        .attr("d", area);
 
     // Create line
     const line = d3.line()
@@ -175,7 +406,7 @@ function createTimelineChart(data) {
     const path = svg.append("path")
         .datum(timelineData)
         .attr("fill", "none")
-        .attr("stroke", "#69b3a2")
+        .attr("stroke", chartColors.primary)
         .attr("stroke-width", 2)
         .attr("d", line);
 
