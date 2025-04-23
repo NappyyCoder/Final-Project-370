@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Game Publishers Analysis</title>
+    <link rel="stylesheet" href="./static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Top Game Publishers Analysis</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publishers.html">Publishers</a></li>
+                <li><a href="genres.html">Genres</a></li>
+                <li><a href="timeline.html">Timeline</a></li>
+                <li><a href="data_description.html">Data Description</a></li>
+                <li><a href="data_analysis.html">Data Analysis</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="content-section">
+            <h2>Understanding Publisher Market Dominance</h2>
+            <p>This visualization showcases the top video game publishers based on global sales volume. The data reveals interesting patterns in market dominance and publisher success rates.</p>
+            
+            <div class="key-insights">
+                <h3>Key Insights</h3>
+                <ul>
+                    <li>Market concentration among top publishers</li>
+                    <li>Regional publishing powerhouses</li>
+                    <li>Evolution of publisher market shares</li>
+                </ul>
+            </div>
+
+            <div id="visualization-1" class="visualization">
+                <div class="chart-container"></div>
+            </div>
+
+            <div class="analysis-notes">
+                <h3>Analysis Notes</h3>
+                <p>The bar chart above represents the total global sales volume for each publisher. The height of each bar corresponds to the cumulative sales in millions of units. Hover over each bar to see detailed statistics.</p>
+                <p>Notable observations include:</p>
+                <ul>
+                    <li>Nintendo's consistent market leadership</li>
+                    <li>The impact of major franchise titles on publisher rankings</li>
+                    <li>The relationship between publisher longevity and total sales</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script src="./static/js/charts.js"></script>
+</body>
+</html>

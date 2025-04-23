@@ -351,13 +351,22 @@ function createGenreChart(data) {
 function createTimelineChart(data) {
     const svg = createResponsiveChart("#visualization-3");
 
-    // Aggregate sales by year
+    // Aggregate sales and count by year
     const yearData = d3.rollup(data,
-        v => d3.sum(v, d => d.Global_Sales),
+        v => ({
+            sales: d3.sum(v, d => d.Global_Sales),
+            count: v.length,  // Count of games per year
+            avgSales: d3.sum(v, d => d.Global_Sales) / v.length  // Average sales per game
+        }),
         d => d.Year
     );
 
-    const timelineData = Array.from(yearData, ([year, sales]) => ({ year, sales }))
+    const timelineData = Array.from(yearData, ([year, values]) => ({
+        year,
+        sales: values.sales,
+        count: values.count,
+        avgSales: values.avgSales
+    }))
         .sort((a, b) => a.year - b.year)
         .filter(d => d.year != "N/A");
 
@@ -531,8 +540,8 @@ function createTimelineChart(data) {
                 tooltip.html(`
                     <strong>Year: ${d.year}</strong><br/>
                     Total Sales: ${d.sales.toFixed(2)}M<br/>
-                    Games Released: ${d.count || 'N/A'}<br/>
-                    Avg Sales/Game: ${d.count ? (d.sales / d.count).toFixed(2) : 'N/A'}M
+                    Games Released: ${d.count}<br/>
+                    Avg Sales/Game: ${d.avgSales.toFixed(2)}M
                 `)
                     .style("left", `${position.left}px`)
                     .style("top", `${position.top}px`);

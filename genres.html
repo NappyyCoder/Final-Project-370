@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Game Genres Analysis</title>
+    <link rel="stylesheet" href="./static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Video Game Genres Analysis</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publishers.html">Publishers</a></li>
+                <li><a href="genres.html">Genres</a></li>
+                <li><a href="timeline.html">Timeline</a></li>
+                <li><a href="data_description.html">Data Description</a></li>
+                <li><a href="data_analysis.html">Data Analysis</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="content-section">
+            <h2>Genre Distribution and Performance</h2>
+            <p>This visualization explores the relationship between game genres, their popularity, and sales performance. The scatter plot reveals insights about market preferences and genre success rates.</p>
+            
+            <div class="key-insights">
+                <h3>Key Insights</h3>
+                <ul>
+                    <li>Popular genres by volume</li>
+                    <li>Sales performance across genres</li>
+                    <li>Market saturation analysis</li>
+                </ul>
+            </div>
+
+            <div id="visualization-2" class="visualization">
+                <div class="chart-container"></div>
+            </div>
+
+            <div class="analysis-notes">
+                <h3>Analysis Notes</h3>
+                <p>The scatter plot displays the relationship between the number of games in each genre and their total sales. Each point represents a genre, with its position indicating both popularity and commercial success.</p>
+                <p>Key observations include:</p>
+                <ul>
+                    <li>Correlation between genre popularity and sales</li>
+                    <li>Identification of niche vs. mainstream genres</li>
+                    <li>Genre performance efficiency (sales per game)</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script src="./static/js/charts.js"></script>
+</body>
+</html>
