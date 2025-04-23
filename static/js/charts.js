@@ -573,6 +573,7 @@ function createTimelineChart(data) {
 d3.csv("./data/vgsales.csv")
     .then(data => {
         console.log("Data loaded successfully:", data.length, "rows");
+        console.log("Sample data:", data[0]); // Log first row to check structure
         globalData = data;
 
         // Convert sales columns to numbers
@@ -586,6 +587,7 @@ d3.csv("./data/vgsales.csv")
 
         // Create chart based on current page
         const currentPage = window.location.pathname.split('/').pop();
+        console.log("Current page:", currentPage); // Log current page
 
         if (currentPage === 'publishers.html') {
             createPublisherChart(data);
@@ -599,6 +601,7 @@ d3.csv("./data/vgsales.csv")
         console.error("Error loading the data:", error);
         console.log("Current URL:", window.location.href);
         console.log("Current path:", window.location.pathname);
+        console.log("Attempted data path:", "./data/vgsales.csv");
     });
 
 // Update resize handler to only recreate relevant chart
