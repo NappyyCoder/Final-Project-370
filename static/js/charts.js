@@ -174,7 +174,12 @@ function createResponsiveChart(containerId) {
 }
 
 // Load data and create charts
-d3.csv("../data/vgsales.csv")
+// Update the data loading path to use the correct GitHub Pages URL
+const dataPath = window.location.pathname.includes('Final-Project-370')
+    ? '/Final-Project-370/data/vgsales.csv'  // GitHub Pages path
+    : '../data/vgsales.csv';                 // Local development path
+
+d3.csv(dataPath)
     .then(data => {
         if (!data || data.length === 0) {
             throw new Error("No data loaded");
@@ -193,6 +198,7 @@ d3.csv("../data/vgsales.csv")
         });
 
         const path = window.location.pathname;
+        console.log("Current URL:", window.location.href);
         console.log("Current path:", path);
 
         if (path.includes('publishers')) {
@@ -204,7 +210,7 @@ d3.csv("../data/vgsales.csv")
         }
     })
     .catch(error => {
-        console.error("Error:", error);
+        console.error("Error loading the data:", error);
         ['visualization-1', 'visualization-2', 'visualization-3'].forEach(vizId => {
             const vizElement = document.getElementById(vizId);
             if (vizElement) {
