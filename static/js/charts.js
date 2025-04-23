@@ -570,24 +570,38 @@ function createTimelineChart(data) {
 }
 
 // Load data and create appropriate chart based on current page
-d3.csv("./data/vgsales.csv")
+d3.csv("../data/vgsales.csv")  // Changed path to use parent directory
     .then(data => {
+        if (!data || data.length === 0) {
+            throw new Error("No data loaded");
+        }
+
         console.log("Data loaded successfully:", data.length, "rows");
         console.log("Sample data:", data[0]); // Log first row to check structure
         globalData = data;
 
-        // Convert sales columns to numbers
+        // Validate data structure
+        if (!data[0].hasOwnProperty('Global_Sales') ||
+            !data[0].hasOwnProperty('Publisher') ||
+            !data[0].hasOwnProperty('Genre') ||
+            !data[0].hasOwnProperty('Year')) {
+            throw new Error("Data missing required columns");
+        }
+
+        // Convert sales columns to numbers and handle missing values
         data.forEach(d => {
-            d.Global_Sales = +d.Global_Sales;
-            d.NA_Sales = +d.NA_Sales;
-            d.EU_Sales = +d.EU_Sales;
-            d.JP_Sales = +d.JP_Sales;
-            d.Other_Sales = +d.Other_Sales;
+            d.Global_Sales = +d.Global_Sales || 0;
+            d.NA_Sales = +d.NA_Sales || 0;
+            d.EU_Sales = +d.EU_Sales || 0;
+            d.JP_Sales = +d.JP_Sales || 0;
+            d.Other_Sales = +d.Other_Sales || 0;
+            // Ensure Year is a number or null
+            d.Year = (d.Year === "N/A" || d.Year === "") ? null : +d.Year;
         });
 
         // Create chart based on current page
-        const currentPage = window.location.pathname.split('/').pop();
-        console.log("Current page:", currentPage); // Log current page
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        console.log("Current page:", currentPage);
 
         if (currentPage === 'publishers.html') {
             createPublisherChart(data);
@@ -601,7 +615,22 @@ d3.csv("./data/vgsales.csv")
         console.error("Error loading the data:", error);
         console.log("Current URL:", window.location.href);
         console.log("Current path:", window.location.pathname);
-        console.log("Attempted data path:", "./data/vgsales.csv");
+        console.log("Attempted data path:", "../data/vgsales.csv");
+
+        // Display error message on the page
+        const visualizations = ['visualization-1', 'visualization-2', 'visualization-3'];
+        visualizations.forEach(vizId => {
+            const vizElement = document.getElementById(vizId);
+            if (vizElement) {
+                vizElement.innerHTML = `
+                    <div class="error-message" style="color: red; padding: 20px; text-align: center;">
+                        <h3>Error Loading Data</h3>
+                        <p>Please ensure the data file exists and is accessible.</p>
+                        <p>Technical details: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
     });
 
 // Update resize handler to only recreate relevant chart
