@@ -537,11 +537,22 @@ function createTimelineChart(data) {
 
                 const position = positionTooltip(event, tooltip);
 
+                // Format numbers with commas for thousands and fixed decimal places
+                const formattedSales = d.sales.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                const formattedCount = d.count.toLocaleString(); // Add thousands separator
+                const formattedAvgSales = d.avgSales.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
                 tooltip.html(`
                     <strong>Year: ${d.year}</strong><br/>
-                    Total Sales: ${d.sales.toFixed(2)}M<br/>
-                    Games Released: ${d.count}<br/>
-                    Avg Sales/Game: ${d.avgSales.toFixed(2)}M
+                    Total Sales: ${formattedSales}M<br/>
+                    Games Released: ${formattedCount}<br/>
+                    Avg Sales/Game: ${formattedAvgSales}M
                 `)
                     .style("left", `${position.left}px`)
                     .style("top", `${position.top}px`);
