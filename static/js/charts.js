@@ -549,8 +549,8 @@ function createTimelineChart(data) {
         .attr("d", line);
 }
 
-// Load data with absolute path for GitHub Pages
-d3.csv("/Final-Project-370/data/vgsales.csv")
+// Load data with relative path
+d3.csv("./data/vgsales.csv")
     .then(data => {
         console.log("Data loaded successfully:", data.length, "rows");
         globalData = data;
