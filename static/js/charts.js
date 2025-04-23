@@ -174,10 +174,17 @@ function createResponsiveChart(containerId) {
 }
 
 // Load data and create charts
-// Update the data loading path to use the correct GitHub Pages URL
-const dataPath = window.location.pathname.includes('Final-Project-370')
-    ? '/Final-Project-370/data/vgsales.csv'  // GitHub Pages path
-    : '../data/vgsales.csv';                 // Local development path
+const getBaseUrl = () => {
+    const ghPagesBase = '/Final-Project-370';
+    return window.location.pathname.includes(ghPagesBase)
+        ? ghPagesBase
+        : '';
+};
+
+// Construct the full data path
+const dataPath = `${getBaseUrl()}/data/vgsales.csv`;
+
+console.log("Attempting to load data from:", dataPath);
 
 d3.csv(dataPath)
     .then(data => {
@@ -217,7 +224,8 @@ d3.csv(dataPath)
                 vizElement.innerHTML = `
                     <div class="error-message">
                         <h3>Error Loading Visualization</h3>
-                        <p>${error.message}</p>
+                        <p>Failed to load data. Please ensure the data file exists and is accessible.</p>
+                        <p>Attempted path: ${dataPath}</p>
                     </div>
                 `;
             }
