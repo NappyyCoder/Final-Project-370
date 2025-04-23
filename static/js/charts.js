@@ -570,23 +570,20 @@ function createTimelineChart(data) {
 }
 
 // Load data and create appropriate chart based on current page
-d3.csv("../data/vgsales.csv")  // Changed path to use parent directory
+d3.csv("../data/vgsales.csv")
     .then(data => {
         if (!data || data.length === 0) {
             throw new Error("No data loaded");
         }
 
         console.log("Data loaded successfully:", data.length, "rows");
-        console.log("Sample data:", data[0]); // Log first row to check structure
+        console.log("Sample data:", data[0]);
         globalData = data;
 
-        // Validate data structure
-        if (!data[0].hasOwnProperty('Global_Sales') ||
-            !data[0].hasOwnProperty('Publisher') ||
-            !data[0].hasOwnProperty('Genre') ||
-            !data[0].hasOwnProperty('Year')) {
-            throw new Error("Data missing required columns");
-        }
+        // Get current page name
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        console.log("Current page path:", window.location.pathname);
+        console.log("Current page name:", currentPage);
 
         // Convert sales columns to numbers and handle missing values
         data.forEach(d => {
@@ -595,27 +592,24 @@ d3.csv("../data/vgsales.csv")  // Changed path to use parent directory
             d.EU_Sales = +d.EU_Sales || 0;
             d.JP_Sales = +d.JP_Sales || 0;
             d.Other_Sales = +d.Other_Sales || 0;
-            // Ensure Year is a number or null
             d.Year = (d.Year === "N/A" || d.Year === "") ? null : +d.Year;
         });
 
-        // Create chart based on current page
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        console.log("Current page:", currentPage);
-
-        if (currentPage === 'publishers.html') {
+        // Create appropriate chart based on page
+        if (currentPage.includes('publishers')) {
             createPublisherChart(data);
-        } else if (currentPage === 'genres.html') {
+        } else if (currentPage.includes('genres')) {
             createGenreChart(data);
-        } else if (currentPage === 'timeline.html') {
+        } else if (currentPage.includes('timeline')) {
             createTimelineChart(data);
+        } else {
+            console.log("No matching visualization for current page");
         }
     })
     .catch(error => {
         console.error("Error loading the data:", error);
         console.log("Current URL:", window.location.href);
         console.log("Current path:", window.location.pathname);
-        console.log("Attempted data path:", "../data/vgsales.csv");
 
         // Display error message on the page
         const visualizations = ['visualization-1', 'visualization-2', 'visualization-3'];
