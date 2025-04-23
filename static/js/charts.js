@@ -479,42 +479,74 @@ function createTimelineChart(data) {
         .duration(2000)
         .attr("stroke-dashoffset", 0);
 
-    svg.selectAll(".dot")
-        .data(timelineData)
-        .enter()
-        .append("circle")
-        .attr("cx", d => x(+d.year))
-        .attr("cy", d => y(d.sales))
-        .attr("r", 5)
-        .style("fill", chartColors.primary)
-        .on("mouseover", function (event, d) {
-            const position = positionTooltip(event, tooltip);
+    // Add hover effects to the area
+    const hoverArea = svg.append("path")
+        .attr("class", "hover-area")
+        .style("fill", "none")
+        .style("pointer-events", "all");
 
-            d3.select(this)
-                .attr("r", 7)
-                .style("opacity", 1)
-                .style("cursor", "pointer");
+    // Create the hover line
+    const hoverLine = svg.append("line")
+        .attr("class", "hover-line")
+        .attr("y1", 0)
+        .attr("y2", height)
+        .style("opacity", 0);
 
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", .9);
-            tooltip.html(`
-                <strong>Year: ${d.year}</strong><br/>
-                Total Sales: ${d.sales.toFixed(2)}M<br/>
-                Games Released: ${d.count}<br/>
-                Avg Sales/Game: ${(d.sales / d.count).toFixed(2)}M
-            `)
-                .style("left", `${position.left}px`)
-                .style("top", `${position.top}px`);
+    // Create hover effects
+    svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .on("mouseover", () => {
+            hoverLine.style("opacity", 1);
+            tooltip.style("opacity", 0.9);
         })
-        .on("mouseout", function () {
-            d3.select(this)
-                .attr("r", 5)
-                .style("opacity", 1);
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
+        .on("mouseout", () => {
+            hoverLine.style("opacity", 0);
+            tooltip.style("opacity", 0);
+        })
+        .on("mousemove", function (event) {
+            const mouseX = d3.pointer(event)[0];
+            const x0 = x.invert(mouseX);
+
+            // Find the closest data point
+            const bisect = d3.bisector(d => +d.year).left;
+            const i = bisect(timelineData, x0);
+            const d0 = timelineData[i - 1];
+            const d1 = timelineData[i];
+            const d = x0 - d0?.year > d1?.year - x0 ? d1 : d0;
+
+            if (d) {
+                hoverLine
+                    .attr("x1", x(+d.year))
+                    .attr("x2", x(+d.year))
+                    .style("stroke", "#8B0000")
+                    .style("stroke-width", "1px")
+                    .style("stroke-dasharray", "5,5");
+
+                const position = positionTooltip(event, tooltip);
+
+                tooltip.html(`
+                    <strong>Year: ${d.year}</strong><br/>
+                    Total Sales: ${d.sales.toFixed(2)}M<br/>
+                    Games Released: ${d.count || 'N/A'}<br/>
+                    Avg Sales/Game: ${d.count ? (d.sales / d.count).toFixed(2) : 'N/A'}M
+                `)
+                    .style("left", `${position.left}px`)
+                    .style("top", `${position.top}px`);
+            }
         });
+
+    // Update the line style
+    svg.append("path")
+        .datum(timelineData)
+        .attr("class", "line")
+        .attr("fill", "none")
+        .attr("stroke", chartColors.primary)
+        .attr("stroke-width", 3)
+        .attr("d", line);
 }
 
 // Load data with absolute path for GitHub Pages
