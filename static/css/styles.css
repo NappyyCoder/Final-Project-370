@@ -418,3 +418,61 @@ svg {
         font-size: 1.2rem;
     }
 }
+
+.viz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.viz-card {
+    background: var(--card-background);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    border: 1px solid rgba(139, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.viz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.viz-card h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.key-insights {
+    background: rgba(139, 0, 0, 0.05);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.key-insights ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.key-insights li {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.key-insights li:before {
+    content: "•";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+}
+
+.analysis-notes {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-top: 2px solid rgba(139, 0, 0, 0.1);
+}

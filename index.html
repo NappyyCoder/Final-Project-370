@@ -7,7 +7,6 @@
     <title>Video Game Sales Analysis</title>
     <link rel="stylesheet" href="./static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 
 <body>
@@ -15,10 +14,10 @@
         <h1>Global Video Game Sales Analysis</h1>
         <nav>
             <ul>
-                <li><a href="#introduction">Overview</a></li>
-                <li><a href="#visualization-1">Publishers</a></li>
-                <li><a href="#visualization-2">Genres</a></li>
-                <li><a href="#visualization-3">Timeline</a></li>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publishers.html">Publishers</a></li>
+                <li><a href="genres.html">Genres</a></li>
+                <li><a href="timeline.html">Timeline</a></li>
                 <li><a href="data_description.html">Data Description</a></li>
                 <li><a href="data_analysis.html">Data Analysis</a></li>
             </ul>
@@ -26,37 +25,31 @@
     </header>
 
     <main>
-        <section id="introduction">
+        <section id="introduction" class="content-section">
             <h2>Exploring Gaming Industry Trends</h2>
-            <p>Dive into the fascinating world of video game sales across different publishers, genres, and time
-                periods.
-                Discover key trends and patterns that have shaped the global gaming industry over the years.</p>
-        </section>
+            <p>Welcome to our comprehensive analysis of video game sales across different publishers, genres, and time
+                periods. This interactive data visualization project provides insights into the gaming industry's
+                evolution and market dynamics.</p>
 
-        <section id="filters">
-            <!-- Filter controls will be added here by JavaScript -->
-        </section>
-
-        <section id="visualization-1" class="visualization">
-            <h2>Top Game Publishers</h2>
-            <p>Explore the market dominance of leading game publishers based on their global sales volume.</p>
-            <div class="chart-container"></div>
-        </section>
-
-        <section id="visualization-2" class="visualization">
-            <h2>Genre Distribution</h2>
-            <p>Analyze how different game genres contribute to overall sales and market share.</p>
-            <div class="chart-container"></div>
-        </section>
-
-        <section id="visualization-3" class="visualization">
-            <h2>Sales Evolution</h2>
-            <p>Track how video game sales have evolved over time, revealing industry growth patterns.</p>
-            <div class="chart-container"></div>
+            <div class="visualization-links">
+                <h3>Available Visualizations</h3>
+                <div class="viz-grid">
+                    <a href="publishers.html" class="viz-card">
+                        <h4>Publisher Analysis</h4>
+                        <p>Explore market dominance and sales distribution among top game publishers.</p>
+                    </a>
+                    <a href="genres.html" class="viz-card">
+                        <h4>Genre Distribution</h4>
+                        <p>Analyze popularity and performance of different game genres.</p>
+                    </a>
+                    <a href="timeline.html" class="viz-card">
+                        <h4>Sales Timeline</h4>
+                        <p>Track the evolution of video game sales over time.</p>
+                    </a>
+                </div>
+            </div>
         </section>
     </main>
-
-    <script src="./static/js/charts.js"></script>
 </body>
 
 </html>
