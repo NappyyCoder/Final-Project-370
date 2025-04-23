@@ -558,7 +558,7 @@ function createTimelineChart(data) {
         .attr("d", line);
 }
 
-// Load data with relative path
+// Load data and create appropriate chart based on current page
 d3.csv("./data/vgsales.csv")
     .then(data => {
         console.log("Data loaded successfully:", data.length, "rows");
@@ -573,9 +573,16 @@ d3.csv("./data/vgsales.csv")
             d.Other_Sales = +d.Other_Sales;
         });
 
-        createPublisherChart(data);
-        createGenreChart(data);
-        createTimelineChart(data);
+        // Create chart based on current page
+        const currentPage = window.location.pathname.split('/').pop();
+
+        if (currentPage === 'publishers.html') {
+            createPublisherChart(data);
+        } else if (currentPage === 'genres.html') {
+            createGenreChart(data);
+        } else if (currentPage === 'timeline.html') {
+            createTimelineChart(data);
+        }
     })
     .catch(error => {
         console.error("Error loading the data:", error);
@@ -583,32 +590,15 @@ d3.csv("./data/vgsales.csv")
         console.log("Current path:", window.location.pathname);
     });
 
-// Add event listeners for responsiveness
+// Update resize handler to only recreate relevant chart
 window.addEventListener('resize', function () {
-    createPublisherChart(globalData);
-    createGenreChart(globalData);
-    createTimelineChart(globalData);
+    const currentPage = window.location.pathname.split('/').pop();
+
+    if (currentPage === 'publishers.html') {
+        createPublisherChart(globalData);
+    } else if (currentPage === 'genres.html') {
+        createGenreChart(globalData);
+    } else if (currentPage === 'timeline.html') {
+        createTimelineChart(globalData);
+    }
 });
-
-// Add filter controls
-function addFilterControls() {
-    const filterDiv = d3.select("#filters")
-        .append("div")
-        .attr("class", "filter-controls");
-
-    filterDiv.append("label")
-        .text("Filter by Year: ");
-
-    filterDiv.append("select")
-        .attr("id", "yearFilter")
-        .on("change", function () {
-            const selectedYear = this.value;
-            const filteredData = selectedYear === "all"
-                ? globalData
-                : globalData.filter(d => d.Year === selectedYear);
-
-            createPublisherChart(filteredData);
-            createGenreChart(filteredData);
-            createTimelineChart(filteredData);
-        });
-}
