@@ -3,9 +3,42 @@ const margin = { top: 80, right: 100, bottom: 80, left: 90 };
 const width = 1100 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
+// Add these utility functions at the top of your file
+function addAxesLabels(svg, xLabel, yLabel) {
+    // X-axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 5)
+        .text(xLabel)
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
+
+    // Y-axis label
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -margin.left + 20)
+        .text(yLabel)
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
+}
+
 // Create publisher chart with animations
 function createPublisherChart(data) {
     const svg = createResponsiveChart("#visualization-1");
+
+    // Enhanced tooltip
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
     // Add chart title
     svg.append("text")
@@ -57,12 +90,10 @@ function createPublisherChart(data) {
         .duration(1000)
         .style("opacity", 1);
 
-    // Create tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
+    // Add axes labels
+    addAxesLabels(svg, "Publishers", "Global Sales (millions)");
 
-    // Add animated bars
+    // Enhanced bars with new animations and interactions
     svg.selectAll("rect")
         .data(sortedData)
         .enter()
@@ -72,18 +103,25 @@ function createPublisherChart(data) {
         .attr("width", x.bandwidth())
         .attr("height", 0)
         .attr("fill", "#8B0000")
-        .attr("rx", 5) // Rounded corners
+        .attr("rx", 5)
         .attr("ry", 5)
         .on("mouseover", function (event, d) {
+            // Enhanced bar animation
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("fill", "#FF4444");
+                .attr("fill", "#FF4444")
+                .attr("transform", "scale(1, 1.05)");
 
+            // Enhanced tooltip
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
-            tooltip.html(`<strong>${d.publisher}</strong><br>Global Sales: ${d.sales.toFixed(2)}M`)
+            tooltip.html(`
+                <strong>${d.publisher}</strong><br>
+                Global Sales: ${d.sales.toFixed(2)}M<br>
+                <span style="font-size: 12px">Click for more details</span>
+            `)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 28) + "px");
         })
@@ -91,22 +129,48 @@ function createPublisherChart(data) {
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("fill", "#8B0000");
+                .attr("fill", "#8B0000")
+                .attr("transform", "scale(1, 1)");
 
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
+        })
+        .on("click", function (event, d) {
+            // Add click interaction
+            alert(`Publisher Details:\n${d.publisher}\nGlobal Sales: ${d.sales.toFixed(2)}M`);
         })
         .transition()
         .duration(1000)
         .delay((d, i) => i * 100)
         .attr("y", d => y(d.sales))
         .attr("height", d => height - y(d.sales));
+
+    // Add value labels on top of bars
+    svg.selectAll(".value-label")
+        .data(sortedData)
+        .enter()
+        .append("text")
+        .attr("class", "value-label")
+        .attr("x", d => x(d.publisher) + x.bandwidth() / 2)
+        .attr("y", d => y(d.sales) - 5)
+        .attr("text-anchor", "middle")
+        .style("opacity", 0)
+        .text(d => d.sales.toFixed(1))
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100 + 500)
+        .style("opacity", 1);
 }
 
 // Create timeline chart with animations
 function createTimelineChart(data) {
     const svg = createResponsiveChart("#visualization-3");
+
+    // Enhanced tooltip
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
     // Add chart title
     svg.append("text")
@@ -156,6 +220,9 @@ function createTimelineChart(data) {
         .duration(1000)
         .style("opacity", 1);
 
+    // Add axes labels
+    addAxesLabels(svg, "Year", "Global Sales (millions)");
+
     // Create tooltip
     const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
@@ -202,23 +269,21 @@ function createTimelineChart(data) {
         .y(d => y(d.sales))
         .curve(d3.curveMonotoneX);
 
-    // Add animated line
+    // Enhanced line animation
     const path = svg.append("path")
         .datum(timelineData)
         .attr("class", "line")
-        .attr("d", line)
-        .style("opacity", 0);
+        .attr("d", line);
 
-    // Animate the line
     const pathLength = path.node().getTotalLength();
     path.style("stroke-dasharray", pathLength + " " + pathLength)
         .style("stroke-dashoffset", pathLength)
-        .style("opacity", 1)
         .transition()
         .duration(2000)
+        .ease(d3.easeLinear)
         .style("stroke-dashoffset", 0);
 
-    // Add animated dots
+    // Enhanced dots with animations and interactions
     svg.selectAll(".dot")
         .data(timelineData)
         .enter()
@@ -228,15 +293,22 @@ function createTimelineChart(data) {
         .attr("cy", d => y(d.sales))
         .attr("r", 0)
         .on("mouseover", function (event, d) {
+            // Enhanced dot animation
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("r", 8);
+                .attr("r", 8)
+                .style("filter", "drop-shadow(0 0 3px rgba(139, 0, 0, 0.5))");
 
+            // Enhanced tooltip
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
-            tooltip.html(`<strong>Year: ${d.year}</strong><br>Global Sales: ${d.sales.toFixed(2)}M`)
+            tooltip.html(`
+                <strong>Year: ${d.year}</strong><br>
+                Global Sales: ${d.sales.toFixed(2)}M<br>
+                <span style="font-size: 12px">Click for yearly breakdown</span>
+            `)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 28) + "px");
         })
@@ -244,20 +316,29 @@ function createTimelineChart(data) {
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("r", 4);
+                .attr("r", 4)
+                .style("filter", "none");
 
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
+        })
+        .on("click", function (event, d) {
+            // Add click interaction
+            alert(`Year ${d.year}\nGlobal Sales: ${d.sales.toFixed(2)}M`);
         })
         .transition()
         .duration(1000)
         .delay((d, i) => 2000 + i * 50)
         .attr("r", 4);
 
-    // Add hover line
-    const hoverLine = svg.append("line")
-        .attr("class", "hover-line")
+    // Add interactive vertical guide line
+    const verticalLine = svg.append("line")
+        .attr("class", "vertical-guide")
+        .style("stroke", "rgba(139, 0, 0, 0.2)")
+        .style("stroke-width", "1px")
+        .style("stroke-dasharray", "3,3")
+        .style("pointer-events", "none")
         .style("opacity", 0);
 
     svg.append("rect")
@@ -268,7 +349,7 @@ function createTimelineChart(data) {
         .style("pointer-events", "all")
         .on("mousemove", function (event) {
             const mouseX = d3.pointer(event)[0];
-            hoverLine
+            verticalLine
                 .attr("x1", mouseX)
                 .attr("x2", mouseX)
                 .attr("y1", 0)
@@ -276,7 +357,7 @@ function createTimelineChart(data) {
                 .style("opacity", 1);
         })
         .on("mouseout", function () {
-            hoverLine.style("opacity", 0);
+            verticalLine.style("opacity", 0);
         });
 }
 
