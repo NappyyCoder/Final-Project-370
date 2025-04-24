@@ -219,30 +219,55 @@ function createPublisherChart(data) {
 function createTimelineChart(data) {
     const svg = createResponsiveChart("#visualization-3");
 
-    // Add chart title
-    svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", width / 2)
-        .attr("y", -margin.top / 2)
-        .attr("text-anchor", "middle")
-        .text("Video Game Sales Timeline")
-        .style("font-size", "24px")
-        .style("font-weight", "bold");
+    // Add gradient for area
+    const gradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id", "area-gradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%");
 
-    // Process data by year
+    gradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#8B0000")
+        .attr("stop-opacity", 0.4);
+
+    gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#8B0000")
+        .attr("stop-opacity", 0.1);
+
+    // Process data by year with additional metrics
     const yearlyData = d3.rollup(data,
-        v => d3.sum(v, d => d.Global_Sales),
+        v => ({
+            sales: d3.sum(v, d => d.Global_Sales),
+            gameCount: v.length,
+            topGame: v.sort((a, b) => b.Global_Sales - a.Global_Sales)[0],
+            avgSales: d3.mean(v, d => d.Global_Sales),
+            genres: d3.rollup(v, games => games.length, d => d.Genre)
+        }),
         d => d.Year
     );
 
-    const timelineData = Array.from(yearlyData, ([year, sales]) => ({
+    const timelineData = Array.from(yearlyData, ([year, stats]) => ({
         year: year,
-        sales: sales
+        sales: stats.sales,
+        gameCount: stats.gameCount,
+        topGame: stats.topGame,
+        avgSales: stats.avgSales,
+        topGenre: Array.from(stats.genres.entries())
+            .sort((a, b) => b[1] - a[1])[0][0]
     }))
         .filter(d => d.year !== null && !isNaN(d.year))
         .sort((a, b) => a.year - b.year);
 
-    // Create scales with proper padding
+    // Calculate year-over-year growth
+    timelineData.forEach((d, i) => {
+        if (i > 0) {
+            d.growth = ((d.sales - timelineData[i - 1].sales) / timelineData[i - 1].sales * 100).toFixed(1);
+        }
+    });
+
+    // Create scales
     const x = d3.scaleLinear()
         .domain(d3.extent(timelineData, d => d.year))
         .range([0, width])
@@ -253,27 +278,74 @@ function createTimelineChart(data) {
         .range([height, 0])
         .nice();
 
-    // Add X and Y axes
+    // Add gridlines
     svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(y)
+            .tickSize(-width)
+            .tickFormat("")
+        );
+
+    // Add axes with transitions
+    const xAxis = svg.append("g")
+        .attr("class", "x-axis")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x).tickFormat(d3.format("d")));
 
-    svg.append("g")
+    const yAxis = svg.append("g")
+        .attr("class", "y-axis")
         .call(d3.axisLeft(y));
 
-    // Create the line
+    // Add axis labels
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("x", width / 2)
+        .attr("y", height + 40)
+        .style("text-anchor", "middle")
+        .text("Year");
+
+    svg.append("text")
+        .attr("class", "axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -40)
+        .style("text-anchor", "middle")
+        .text("Global Sales (Millions)");
+
+    // Create area and line
+    const area = d3.area()
+        .x(d => x(d.year))
+        .y0(height)
+        .y1(d => y(d.sales))
+        .curve(d3.curveMonotoneX);
+
     const line = d3.line()
         .x(d => x(d.year))
         .y(d => y(d.sales))
-        .curve(d3.curveMonotoneX); // Smooths the line
+        .curve(d3.curveMonotoneX);
 
-    // Add the line path
+    // Add area with animation
+    svg.append("path")
+        .datum(timelineData)
+        .attr("class", "area")
+        .attr("fill", "url(#area-gradient)")
+        .attr("d", area)
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
+
+    // Add line with animation
     const path = svg.append("path")
         .datum(timelineData)
         .attr("class", "line")
-        .attr("d", line);
+        .attr("d", line)
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
 
-    // Add dots with fixed positioning
+    // Add interactive dots
     const dots = svg.selectAll(".dot")
         .data(timelineData)
         .enter()
@@ -281,82 +353,99 @@ function createTimelineChart(data) {
         .attr("class", "dot")
         .attr("cx", d => x(d.year))
         .attr("cy", d => y(d.sales))
-        .attr("r", 4)
-        .style("fill", "#8B0000")
-        .style("stroke", "white")
-        .style("stroke-width", "2px");
+        .attr("r", 0)
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 50)
+        .attr("r", 6);
 
-    // Enhanced hover behavior
-    dots.on("mouseover", function (event, d) {
-        const dot = d3.select(this);
+    // Enhanced tooltip interaction
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
-        // Enhance dot appearance
-        dot.transition()
-            .duration(200)
-            .attr("r", 8)
-            .style("fill", "#FF4444");
+    svg.selectAll(".dot")
+        .on("mouseover", function (event, d) {
+            const dot = d3.select(this);
 
-        // Calculate tooltip position relative to SVG
-        const svgRect = svg.node().getBoundingClientRect();
-        const xPosition = parseFloat(dot.attr("cx")) + svgRect.left + 10;
-        const yPosition = parseFloat(dot.attr("cy")) + svgRect.top - 28;
+            // Enhance dot appearance
+            dot.transition()
+                .duration(200)
+                .attr("r", 8)
+                .style("fill", "#FF4444");
 
-        // Show tooltip with fixed positioning
-        tooltip.transition()
-            .duration(200)
-            .style("opacity", .9);
+            // Show tooltip
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.9);
 
-        tooltip.html(`
-                <strong>Year: ${d.year}</strong><br>
+            tooltip.html(`
+                <div class="tooltip-header">
+                    <strong>${d.year}</strong>
+                    <span class="growth ${d.growth > 0 ? 'positive' : 'negative'}">
+                        ${d.growth ? (d.growth > 0 ? '↑' : '↓') + Math.abs(d.growth) + '%' : ''}
+                    </span>
+                </div>
                 <hr>
                 <div class="tooltip-grid">
                     <div class="tooltip-stat">
-                        <span class="stat-label">Global Sales:</span>
+                        <span class="stat-label">Total Sales:</span>
                         <span class="stat-value">${d.sales.toFixed(2)}M</span>
                     </div>
                     <div class="tooltip-stat">
                         <span class="stat-label">Games Released:</span>
-                        <span class="stat-value">${yearGames.length}</span>
+                        <span class="stat-value">${d.gameCount}</span>
+                    </div>
+                    <div class="tooltip-stat">
+                        <span class="stat-label">Avg Sales/Game:</span>
+                        <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
                     </div>
                     <div class="tooltip-stat">
                         <span class="stat-label">Top Game:</span>
-                        <span class="stat-value">${topGame.Name}</span>
+                        <span class="stat-value">${d.topGame.Name}</span>
                     </div>
                     <div class="tooltip-stat">
-                        <span class="stat-label">Best Genre:</span>
-                        <span class="stat-value">${bestGenre.genre}</span>
+                        <span class="stat-label">Popular Genre:</span>
+                        <span class="stat-value">${d.topGenre}</span>
                     </div>
                 </div>
             `)
-            .style("left", `${xPosition}px`)
-            .style("top", `${yPosition}px`);
-    })
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+
+            // Add vertical guide line
+            svg.append("line")
+                .attr("class", "guide-line")
+                .attr("x1", x(d.year))
+                .attr("x2", x(d.year))
+                .attr("y1", y(d.sales))
+                .attr("y2", height);
+        })
         .on("mouseout", function () {
-            // Reset dot appearance
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("r", 4)
+                .attr("r", 6)
                 .style("fill", "#8B0000");
 
-            // Hide tooltip
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
+
+            svg.selectAll(".guide-line").remove();
         });
 
-    // Add vertical guide line
-    const verticalLine = svg.append("line")
-        .attr("class", "vertical-guide")
-        .style("opacity", 0);
-
-    // Add overlay for better hover area
-    svg.append("rect")
-        .attr("class", "overlay")
-        .attr("width", width)
-        .attr("height", height)
-        .style("fill", "none")
-        .style("pointer-events", "all");
+    // Add chart title with animation
+    svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("opacity", 0)
+        .text("Video Game Sales Timeline (1980-2020)")
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
 }
 
 // Create genre chart with animations
