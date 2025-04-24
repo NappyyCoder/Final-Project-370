@@ -178,7 +178,7 @@ function createPublisherChart(data) {
 function createTimelineChart(data) {
     const svg = createResponsiveChart("#visualization-3");
 
-    // Enhanced tooltip
+    // Enhanced tooltip (remove duplicate declaration)
     const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
@@ -233,46 +233,6 @@ function createTimelineChart(data) {
 
     // Add axes labels
     addAxesLabels(svg, "Year", "Global Sales (millions)");
-
-    // Create tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
-
-    // Create gradient for area
-    const gradient = svg.append("defs")
-        .append("linearGradient")
-        .attr("id", "area-gradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%");
-
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.4);
-
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.1);
-
-    // Create area
-    const area = d3.area()
-        .x(d => x(d.year))
-        .y0(height)
-        .y1(d => y(d.sales))
-        .curve(d3.curveMonotoneX);
-
-    // Add animated area
-    svg.append("path")
-        .datum(timelineData)
-        .attr("class", "area")
-        .attr("d", area)
-        .style("fill", "url(#area-gradient)")
-        .style("opacity", 0)
-        .transition()
-        .duration(1500)
-        .style("opacity", 1);
 
     // Create line
     const line = d3.line()
@@ -351,25 +311,6 @@ function createTimelineChart(data) {
         .style("stroke-dasharray", "3,3")
         .style("pointer-events", "none")
         .style("opacity", 0);
-
-    svg.append("rect")
-        .attr("class", "overlay")
-        .attr("width", width)
-        .attr("height", height)
-        .style("fill", "none")
-        .style("pointer-events", "all")
-        .on("mousemove", function (event) {
-            const mouseX = d3.pointer(event)[0];
-            verticalLine
-                .attr("x1", mouseX)
-                .attr("x2", mouseX)
-                .attr("y1", 0)
-                .attr("y2", height)
-                .style("opacity", 1);
-        })
-        .on("mouseout", function () {
-            verticalLine.style("opacity", 0);
-        });
 }
 
 // Create genre chart with animations
