@@ -131,8 +131,14 @@ function createPublisherChart(data) {
                 .style("opacity", .9);
             tooltip.html(`
                 <strong>${d.publisher}</strong><br>
+                <hr>
                 Global Sales: ${d.sales.toFixed(2)}M<br>
-                <span style="font-size: 12px">Click for more details</span>
+                Market Share: ${(d.sales / totalSales * 100).toFixed(1)}%<br>
+                Total Games: ${d.gameCount}<br>
+                Avg Sales/Game: ${(d.sales / d.gameCount).toFixed(2)}M<br>
+                Top Game: ${d.topGame}<br>
+                Peak Year: ${d.peakYear || 'N/A'}<br>
+                <span style="font-size: 12px; font-style: italic">Click for detailed breakdown</span>
             `)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 28) + "px");
@@ -267,14 +273,28 @@ function createTimelineChart(data) {
                 .attr("r", 8)
                 .style("filter", "drop-shadow(0 0 3px rgba(139, 0, 0, 0.5))");
 
-            // Enhanced tooltip
+            // Calculate year-specific statistics
+            const yearGames = data.filter(game => game.Year === d.year);
+            const topGame = yearGames.reduce((prev, current) =>
+                (prev.Global_Sales > current.Global_Sales) ? prev : current);
+            const topGenre = d3.rollup(yearGames,
+                v => d3.sum(v, d => d.Global_Sales),
+                d => d.Genre);
+            const bestGenre = Array.from(topGenre, ([genre, sales]) => ({ genre, sales }))
+                .sort((a, b) => b.sales - a.sales)[0];
+
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
             tooltip.html(`
                 <strong>Year: ${d.year}</strong><br>
+                <hr>
                 Global Sales: ${d.sales.toFixed(2)}M<br>
-                <span style="font-size: 12px">Click for yearly breakdown</span>
+                Number of Games: ${yearGames.length}<br>
+                Top Game: ${topGame.Name}<br>
+                Best Genre: ${bestGenre.genre}<br>
+                Avg Sales/Game: ${(d.sales / yearGames.length).toFixed(2)}M<br>
+                <span style="font-size: 12px; font-style: italic">Click for yearly breakdown</span>
             `)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 28) + "px");
@@ -385,15 +405,30 @@ function createGenreChart(data) {
                 .attr("fill", "#FF4444")
                 .attr("opacity", 1);
 
-            // Enhanced tooltip
+            // Calculate genre-specific statistics
+            const genreGames = data.filter(game => game.Genre === d.genre);
+            const topGame = genreGames.reduce((prev, current) =>
+                (prev.Global_Sales > current.Global_Sales) ? prev : current);
+            const topPublisher = d3.rollup(genreGames,
+                v => d3.sum(v, d => d.Global_Sales),
+                d => d.Publisher);
+            const bestPublisher = Array.from(topPublisher, ([pub, sales]) => ({ pub, sales }))
+                .sort((a, b) => b.sales - a.sales)[0];
+
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9);
             tooltip.html(`
                 <strong>${d.genre}</strong><br>
+                <hr>
                 Total Sales: ${d.sales.toFixed(2)}M<br>
-                Games: ${d.count}<br>
-                Avg Sales: ${(d.sales / d.count).toFixed(2)}M per game
+                Market Share: ${(d.sales / totalSales * 100).toFixed(1)}%<br>
+                Number of Games: ${d.count}<br>
+                Avg Sales/Game: ${(d.sales / d.count).toFixed(2)}M<br>
+                Top Game: ${topGame.Name}<br>
+                Best Publisher: ${bestPublisher.pub}<br>
+                Peak Year: ${d.peakYear || 'N/A'}<br>
+                <span style="font-size: 12px; font-style: italic">Click for genre analysis</span>
             `)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 28) + "px");
