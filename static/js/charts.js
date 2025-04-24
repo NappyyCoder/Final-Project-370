@@ -361,6 +361,156 @@ function createTimelineChart(data) {
         });
 }
 
+// Create genre chart with animations
+function createGenreChart(data) {
+    const svg = createResponsiveChart("#visualization-2");
+
+    // Enhanced tooltip
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+    // Add chart title
+    svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .text("Video Game Genres Analysis")
+        .style("font-size", "24px")
+        .style("font-weight", "bold");
+
+    // Process data for genres
+    const genreData = d3.rollup(data,
+        v => ({
+            sales: d3.sum(v, d => d.Global_Sales),
+            count: v.length
+        }),
+        d => d.Genre
+    );
+
+    const scatterData = Array.from(genreData, ([genre, values]) => ({
+        genre: genre,
+        sales: values.sales,
+        count: values.count
+    }));
+
+    // Create scales
+    const x = d3.scaleLinear()
+        .domain([0, d3.max(scatterData, d => d.count)])
+        .range([0, width]);
+
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(scatterData, d => d.sales)])
+        .range([height, 0]);
+
+    // Add axes with animations
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x))
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
+
+    svg.append("g")
+        .call(d3.axisLeft(y))
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
+
+    // Add axes labels
+    addAxesLabels(svg, "Number of Games", "Global Sales (millions)");
+
+    // Add scatter points with animations
+    svg.selectAll("circle")
+        .data(scatterData)
+        .enter()
+        .append("circle")
+        .attr("cx", d => x(d.count))
+        .attr("cy", height) // Start from bottom
+        .attr("r", 0) // Start with radius 0
+        .attr("fill", "#8B0000")
+        .attr("opacity", 0.7)
+        .on("mouseover", function (event, d) {
+            // Enhanced point animation
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("r", 12)
+                .attr("fill", "#FF4444")
+                .attr("opacity", 1);
+
+            // Enhanced tooltip
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html(`
+                <strong>${d.genre}</strong><br>
+                Total Sales: ${d.sales.toFixed(2)}M<br>
+                Games: ${d.count}<br>
+                Avg Sales: ${(d.sales / d.count).toFixed(2)}M per game
+            `)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("r", 8)
+                .attr("fill", "#8B0000")
+                .attr("opacity", 0.7);
+
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100)
+        .attr("cy", d => y(d.sales))
+        .attr("r", 8);
+
+    // Add genre labels
+    svg.selectAll(".genre-label")
+        .data(scatterData)
+        .enter()
+        .append("text")
+        .attr("class", "genre-label")
+        .attr("x", d => x(d.count))
+        .attr("y", d => y(d.sales) - 15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .style("opacity", 0)
+        .text(d => d.genre)
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100 + 500)
+        .style("opacity", 1);
+
+    // Add trend line
+    const line = d3.line()
+        .x(d => x(d.count))
+        .y(d => y(d.sales));
+
+    const sortedData = scatterData.sort((a, b) => a.count - b.count);
+
+    svg.append("path")
+        .datum(sortedData)
+        .attr("class", "trend-line")
+        .attr("fill", "none")
+        .attr("stroke", "#FF4444")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "5,5")
+        .attr("d", line)
+        .style("opacity", 0)
+        .transition()
+        .duration(1500)
+        .style("opacity", 0.5);
+}
+
 // Helper function to create responsive chart base
 function createResponsiveChart(selector) {
     const svg = d3.select(selector)
