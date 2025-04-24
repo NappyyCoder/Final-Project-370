@@ -221,39 +221,76 @@ svg {
     position: absolute;
     background: rgba(0, 0, 0, 0.95);
     color: white;
-    padding: 1rem 1.5rem;
+    padding: 1.5rem;
     border-radius: 12px;
     font-size: 0.9rem;
     pointer-events: none;
-    max-width: 320px;
-    box-shadow: var(--shadow-lg);
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
-    transition: var(--transition-fast);
+    transition: all 0.2s ease;
 }
 
 .tooltip strong {
     color: var(--accent-light);
     display: block;
+    font-size: 1.2rem;
     margin-bottom: 0.5rem;
-    font-weight: 600;
-    font-size: 1.1rem;
 }
 
 .tooltip hr {
     border: none;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
-    margin: 0.5rem 0;
+    margin: 0.8rem 0;
 }
 
-.tooltip span {
-    display: block;
-    margin-top: 8px;
-    font-style: italic;
-    opacity: 0.8;
+.tooltip-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+}
+
+.tooltip-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: white;
+}
+
+.tooltip-footer {
+    margin-top: 1rem;
+    padding-top: 0.8rem;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
-    padding-top: 5px;
+    text-align: center;
+}
+
+.tooltip-hint {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 768px) {
+    .tooltip {
+        max-width: 300px;
+        padding: 1rem;
+    }
+
+    .tooltip-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
 }
 
 /* Hover line styles for timeline chart */
