@@ -239,88 +239,74 @@ function createTimelineChart(data) {
         year: year,
         sales: sales
     }))
-        .filter(d => d.year !== null)
+        .filter(d => d.year !== null && !isNaN(d.year))
         .sort((a, b) => a.year - b.year);
 
-    // Create scales
+    // Create scales with proper padding
     const x = d3.scaleLinear()
         .domain(d3.extent(timelineData, d => d.year))
-        .range([0, width]);
+        .range([0, width])
+        .nice();
 
     const y = d3.scaleLinear()
         .domain([0, d3.max(timelineData, d => d.sales)])
-        .range([height, 0]);
+        .range([height, 0])
+        .nice();
 
-    // Add axes with animations
+    // Add X and Y axes
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .call(d3.axisBottom(x).tickFormat(d3.format("d")));
 
     svg.append("g")
-        .call(d3.axisLeft(y))
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .call(d3.axisLeft(y));
 
-    // Add axes labels
-    addAxesLabels(svg, "Year", "Global Sales (millions)");
-
-    // Create line
+    // Create the line
     const line = d3.line()
         .x(d => x(d.year))
         .y(d => y(d.sales))
-        .curve(d3.curveMonotoneX);
+        .curve(d3.curveMonotoneX); // Smooths the line
 
-    // Enhanced line animation
+    // Add the line path
     const path = svg.append("path")
         .datum(timelineData)
         .attr("class", "line")
         .attr("d", line);
 
-    const pathLength = path.node().getTotalLength();
-    path.style("stroke-dasharray", pathLength + " " + pathLength)
-        .style("stroke-dashoffset", pathLength)
-        .transition()
-        .duration(2000)
-        .ease(d3.easeLinear)
-        .style("stroke-dashoffset", 0);
-
-    // Enhanced dots with animations and interactions
-    svg.selectAll(".dot")
+    // Add dots with fixed positioning
+    const dots = svg.selectAll(".dot")
         .data(timelineData)
         .enter()
         .append("circle")
         .attr("class", "dot")
         .attr("cx", d => x(d.year))
         .attr("cy", d => y(d.sales))
-        .attr("r", 0)
-        .on("mouseover", function (event, d) {
-            // Enhanced dot animation
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .attr("r", 8)
-                .style("filter", "drop-shadow(0 0 3px rgba(139, 0, 0, 0.5))");
+        .attr("r", 4)
+        .style("fill", "#8B0000")
+        .style("stroke", "white")
+        .style("stroke-width", "2px");
 
-            // Calculate year-specific statistics
-            const yearGames = data.filter(game => game.Year === d.year);
-            const topGame = yearGames.reduce((prev, current) =>
-                (prev.Global_Sales > current.Global_Sales) ? prev : current);
-            const topGenre = d3.rollup(yearGames,
-                v => d3.sum(v, d => d.Global_Sales),
-                d => d.Genre);
-            const bestGenre = Array.from(topGenre, ([genre, sales]) => ({ genre, sales }))
-                .sort((a, b) => b.sales - a.sales)[0];
+    // Enhanced hover behavior
+    dots.on("mouseover", function (event, d) {
+        const dot = d3.select(this);
 
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", .9);
-            tooltip.html(`
+        // Enhance dot appearance
+        dot.transition()
+            .duration(200)
+            .attr("r", 8)
+            .style("fill", "#FF4444");
+
+        // Calculate tooltip position relative to SVG
+        const svgRect = svg.node().getBoundingClientRect();
+        const xPosition = parseFloat(dot.attr("cx")) + svgRect.left + 10;
+        const yPosition = parseFloat(dot.attr("cy")) + svgRect.top - 28;
+
+        // Show tooltip with fixed positioning
+        tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+
+        tooltip.html(`
                 <strong>Year: ${d.year}</strong><br>
                 <hr>
                 <div class="tooltip-grid">
@@ -340,62 +326,37 @@ function createTimelineChart(data) {
                         <span class="stat-label">Best Genre:</span>
                         <span class="stat-value">${bestGenre.genre}</span>
                     </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Avg Sales/Game:</span>
-                        <span class="stat-value">${(d.sales / yearGames.length).toFixed(2)}M</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Top Publisher:</span>
-                        <span class="stat-value">${topPublisher || 'N/A'}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Regional Breakdown:</span>
-                        <span class="stat-value">
-                            NA: ${d.naSales?.toFixed(2)}M<br>
-                            EU: ${d.euSales?.toFixed(2)}M<br>
-                            JP: ${d.jpSales?.toFixed(2)}M
-                        </span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">YoY Growth:</span>
-                        <span class="stat-value">${yoyGrowth ? (yoyGrowth * 100).toFixed(1) + '%' : 'N/A'}</span>
-                    </div>
-                </div>
-                <div class="tooltip-footer">
-                    <span class="tooltip-hint">Click for yearly breakdown</span>
                 </div>
             `)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
-        })
+            .style("left", `${xPosition}px`)
+            .style("top", `${yPosition}px`);
+    })
         .on("mouseout", function () {
+            // Reset dot appearance
             d3.select(this)
                 .transition()
                 .duration(200)
                 .attr("r", 4)
-                .style("filter", "none");
+                .style("fill", "#8B0000");
 
+            // Hide tooltip
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
-        })
-        .on("click", function (event, d) {
-            // Add click interaction
-            alert(`Year ${d.year}\nGlobal Sales: ${d.sales.toFixed(2)}M`);
-        })
-        .transition()
-        .duration(1000)
-        .delay((d, i) => 2000 + i * 50)
-        .attr("r", 4);
+        });
 
-    // Add interactive vertical guide line
+    // Add vertical guide line
     const verticalLine = svg.append("line")
         .attr("class", "vertical-guide")
-        .style("stroke", "rgba(139, 0, 0, 0.2)")
-        .style("stroke-width", "1px")
-        .style("stroke-dasharray", "3,3")
-        .style("pointer-events", "none")
         .style("opacity", 0);
+
+    // Add overlay for better hover area
+    svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all");
 }
 
 // Create genre chart with animations
