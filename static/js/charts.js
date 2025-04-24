@@ -1,16 +1,27 @@
-// Chart configurations
+// Global configurations
 const margin = { top: 80, right: 100, bottom: 80, left: 90 };
 const width = 1100 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
-// Add these utility functions at the top of your file
+// Utility function to create responsive chart base
+function createResponsiveChart(selector) {
+    const svg = d3.select(selector)
+        .select(".chart-container")
+        .append("svg")
+        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    return svg;
+}
+
+// Utility function to add axes labels
 function addAxesLabels(svg, xLabel, yLabel) {
     // X-axis label
     svg.append("text")
         .attr("class", "axis-label")
-        .attr("text-anchor", "middle")
         .attr("x", width / 2)
-        .attr("y", height + margin.bottom - 5)
+        .attr("y", height + margin.bottom - 10)
+        .attr("text-anchor", "middle")
         .text(xLabel)
         .style("opacity", 0)
         .transition()
@@ -20,10 +31,10 @@ function addAxesLabels(svg, xLabel, yLabel) {
     // Y-axis label
     svg.append("text")
         .attr("class", "axis-label")
-        .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
         .attr("y", -margin.left + 20)
+        .attr("text-anchor", "middle")
         .text(yLabel)
         .style("opacity", 0)
         .transition()
@@ -511,30 +522,20 @@ function createGenreChart(data) {
         .style("opacity", 0.5);
 }
 
-// Helper function to create responsive chart base
-function createResponsiveChart(selector) {
-    const svg = d3.select(selector)
-        .append("svg")
-        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    return svg;
-}
-
 // Load data and create charts
-const getBaseUrl = () => {
+function getBaseUrl() {
     const ghPagesBase = '/Final-Project-370';
     return window.location.pathname.includes(ghPagesBase)
         ? ghPagesBase
         : '';
-};
+}
 
 // Construct the full data path
 const dataPath = `${getBaseUrl()}/data/vgsales.csv`;
 
 console.log("Attempting to load data from:", dataPath);
 
+// Load data and create appropriate chart
 d3.csv(dataPath)
     .then(data => {
         if (!data || data.length === 0) {
