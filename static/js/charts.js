@@ -229,7 +229,7 @@ function createTimelineChart(data) {
     gradient.append("stop")
         .attr("offset", "0%")
         .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.4);
+        .attr("stop-opacity", 0.6);
 
     gradient.append("stop")
         .attr("offset", "100%")
@@ -286,45 +286,12 @@ function createTimelineChart(data) {
             .tickFormat("")
         );
 
-    // Add axes with transitions
-    const xAxis = svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickFormat(d3.format("d")));
-
-    const yAxis = svg.append("g")
-        .attr("class", "y-axis")
-        .call(d3.axisLeft(y));
-
-    // Add axis labels
-    svg.append("text")
-        .attr("class", "axis-label")
-        .attr("x", width / 2)
-        .attr("y", height + 40)
-        .style("text-anchor", "middle")
-        .text("Year");
-
-    svg.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height / 2)
-        .attr("y", -40)
-        .style("text-anchor", "middle")
-        .text("Global Sales (Millions)");
-
-    // Create area and line
+    // Add area with animation
     const area = d3.area()
         .x(d => x(d.year))
         .y0(height)
-        .y1(d => y(d.sales))
-        .curve(d3.curveMonotoneX);
+        .y1(d => y(d.sales));
 
-    const line = d3.line()
-        .x(d => x(d.year))
-        .y(d => y(d.sales))
-        .curve(d3.curveMonotoneX);
-
-    // Add area with animation
     svg.append("path")
         .datum(timelineData)
         .attr("class", "area")
@@ -332,20 +299,32 @@ function createTimelineChart(data) {
         .attr("d", area)
         .style("opacity", 0)
         .transition()
-        .duration(1000)
+        .duration(1500)
         .style("opacity", 1);
 
     // Add line with animation
+    const line = d3.line()
+        .x(d => x(d.year))
+        .y(d => y(d.sales));
+
     const path = svg.append("path")
         .datum(timelineData)
         .attr("class", "line")
         .attr("d", line)
         .style("opacity", 0)
+        .attr("stroke-dasharray", function () {
+            const length = this.getTotalLength();
+            return `${length} ${length}`;
+        })
+        .attr("stroke-dashoffset", function () {
+            return this.getTotalLength();
+        })
         .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .duration(2000)
+        .style("opacity", 1)
+        .attr("stroke-dashoffset", 0);
 
-    // Add interactive dots
+    // Add interactive dots with animations
     const dots = svg.selectAll(".dot")
         .data(timelineData)
         .enter()
@@ -354,16 +333,20 @@ function createTimelineChart(data) {
         .attr("cx", d => x(d.year))
         .attr("cy", d => y(d.sales))
         .attr("r", 0)
+        .attr("fill", "#8B0000")
         .transition()
         .duration(1000)
-        .delay((d, i) => i * 50)
+        .delay((d, i) => i * 100 + 1000)
         .attr("r", 6);
 
-    // Enhanced tooltip interaction
+    // Create tooltip
     const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
-        .style("opacity", 0);
+        .style("opacity", 0)
+        .style("position", "absolute")
+        .style("pointer-events", "none");
 
+    // Enhanced dot interaction
     svg.selectAll(".dot")
         .on("mouseover", function (event, d) {
             const dot = d3.select(this);
@@ -374,7 +357,13 @@ function createTimelineChart(data) {
                 .attr("r", 8)
                 .style("fill", "#FF4444");
 
-            // Show tooltip
+            // Calculate tooltip position relative to the dot
+            const dotX = parseFloat(dot.attr("cx"));
+            const dotY = parseFloat(dot.attr("cy"));
+            const tooltipX = x(d.year) + margin.left + 20; // 20px offset from dot
+            const tooltipY = y(d.sales) + margin.top - 28; // Position above the dot
+
+            // Show and position tooltip
             tooltip.transition()
                 .duration(200)
                 .style("opacity", 0.9);
@@ -410,30 +399,58 @@ function createTimelineChart(data) {
                     </div>
                 </div>
             `)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+                .style("left", `${tooltipX}px`)
+                .style("top", `${tooltipY}px`);
 
-            // Add vertical guide line
+            // Add vertical guide line with animation
             svg.append("line")
                 .attr("class", "guide-line")
                 .attr("x1", x(d.year))
                 .attr("x2", x(d.year))
-                .attr("y1", y(d.sales))
-                .attr("y2", height);
+                .attr("y1", height)
+                .attr("y2", height)
+                .transition()
+                .duration(200)
+                .attr("y2", y(d.sales));
         })
         .on("mouseout", function () {
+            // Reset dot appearance
             d3.select(this)
                 .transition()
                 .duration(200)
                 .attr("r", 6)
                 .style("fill", "#8B0000");
 
+            // Hide tooltip
             tooltip.transition()
-                .duration(500)
+                .duration(200)
                 .style("opacity", 0);
 
-            svg.selectAll(".guide-line").remove();
+            // Remove guide line with animation
+            svg.selectAll(".guide-line")
+                .transition()
+                .duration(200)
+                .attr("y2", height)
+                .remove();
         });
+
+    // Add animated axes
+    svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${height})`)
+        .style("opacity", 0)
+        .call(d3.axisBottom(x).tickFormat(d3.format("d")))
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
+
+    svg.append("g")
+        .attr("class", "y-axis")
+        .style("opacity", 0)
+        .call(d3.axisLeft(y))
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
 
     // Add chart title with animation
     svg.append("text")
