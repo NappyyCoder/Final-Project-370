@@ -3,6 +3,12 @@ const margin = { top: 80, right: 100, bottom: 80, left: 90 };
 const width = 1100 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
+// Global tooltip
+const tooltip = d3.select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
 // Utility function to create responsive chart base
 function createResponsiveChart(selector) {
     const svg = d3.select(selector)
@@ -45,11 +51,6 @@ function addAxesLabels(svg, xLabel, yLabel) {
 // Create publisher chart with animations
 function createPublisherChart(data) {
     const svg = createResponsiveChart("#visualization-1");
-
-    // Enhanced tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     // Add chart title
     svg.append("text")
@@ -177,11 +178,6 @@ function createPublisherChart(data) {
 // Create timeline chart with animations
 function createTimelineChart(data) {
     const svg = createResponsiveChart("#visualization-3");
-
-    // Enhanced tooltip (remove duplicate declaration)
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     // Add chart title
     svg.append("text")
@@ -316,11 +312,6 @@ function createTimelineChart(data) {
 // Create genre chart with animations
 function createGenreChart(data) {
     const svg = createResponsiveChart("#visualization-2");
-
-    // Enhanced tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     // Add chart title
     svg.append("text")
