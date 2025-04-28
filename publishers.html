@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="./static/js/charts.js" defer></script>
 </head>
 
 <body>
@@ -27,71 +28,33 @@
 
     <main>
         <section class="content-section">
-            <h2>Publisher Market Analysis</h2>
-            <p>This visualization examines the performance and market share of top video game publishers. The data
-                reveals key insights about market dominance, publishing strategies, and commercial success across
-                different companies.</p>
+            <h2>Understanding Publisher Market Dominance</h2>
+            <p>This visualization showcases the top video game publishers based on global sales volume. The data reveals
+                interesting patterns in market dominance and publisher success rates.</p>
 
-            <div class="visualization">
-                <div class="visualization-description">
-                    <h3>How to Read This Chart</h3>
-                    <p>This bar chart displays the top 15 video game publishers ranked by their global sales:</p>
-                    <ul>
-                        <li><strong>Vertical Axis (Y):</strong> Shows global sales in millions of units</li>
-                        <li><strong>Horizontal Axis (X):</strong> Lists publisher names</li>
-                        <li><strong>Bar Height:</strong> Represents total global sales volume</li>
-                        <li><strong>Interactive Features:</strong>
-                            <ul>
-                                <li>Hover over any bar to see detailed statistics</li>
-                                <li>Tooltip shows market share, total sales, number of games, and top-selling title</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-
-                <div id="visualization-container" class="chart-container"></div>
-
-                <div class="visualization-insights">
-                    <h3>Key Insights</h3>
-                    <ul>
-                        <li><strong>Market Concentration:</strong> The top 5 publishers account for a significant
-                            portion of total industry sales</li>
-                        <li><strong>Portfolio Size:</strong> Larger publishers tend to have more diverse game catalogs
-                        </li>
-                        <li><strong>Success Patterns:</strong> Publishers with consistent hit titles show sustained
-                            market presence</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="analysis-section">
-                <h3>Market Leaders</h3>
-                <p>The data highlights several dominant publishers in the gaming industry:</p>
+            <div class="key-insights">
+                <h3>Key Insights</h3>
                 <ul>
-                    <li><strong>Nintendo:</strong> Consistently strong performance in both domestic (Japan) and global
-                        markets</li>
-                    <li><strong>Electronic Arts:</strong> Major presence in sports and action genres</li>
-                    <li><strong>Activision:</strong> Strong performance in action and FPS categories</li>
+                    <li>Market concentration among top publishers</li>
+                    <li>Regional publishing powerhouses</li>
+                    <li>Evolution of publisher market shares</li>
                 </ul>
             </div>
 
-            <div class="analysis-section">
-                <h3>Publishing Strategies</h3>
-                <p>Different publishers show distinct strategies in the market:</p>
-                <ul>
-                    <li>Focus on specific genres or platforms</li>
-                    <li>Regional market specialization</li>
-                    <li>Balanced portfolio approach</li>
-                </ul>
+            <div id="visualization-1" class="visualization">
+                <div class="chart-container"></div>
             </div>
 
-            <div class="analysis-section">
-                <h3>Historical Trends</h3>
-                <p>The data reveals interesting patterns in publisher performance over time:</p>
+            <div class="analysis-notes">
+                <h3>Analysis Notes</h3>
+                <p>The bar chart above represents the total global sales volume for each publisher. The height of each
+                    bar corresponds to the cumulative sales in millions of units. Hover over each bar to see detailed
+                    statistics.</p>
+                <p>Notable observations include:</p>
                 <ul>
-                    <li>Consolidation of major publishers</li>
-                    <li>Emergence of new successful publishers</li>
-                    <li>Impact of digital distribution</li>
+                    <li>Nintendo's consistent market leadership</li>
+                    <li>The impact of major franchise titles on publisher rankings</li>
+                    <li>The relationship between publisher longevity and total sales</li>
                 </ul>
             </div>
         </section>

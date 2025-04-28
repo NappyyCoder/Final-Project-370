@@ -139,8 +139,6 @@ main {
     transition: var(--transition-normal);
     position: relative;
     overflow: hidden;
-    width: 100%;
-    /* Ensure full width */
 }
 
 .visualization:hover {
@@ -199,85 +197,13 @@ main {
     box-shadow: 0 0 0 2px rgba(255, 51, 51, 0.2);
 }
 
-/**
- * VISUALIZATION STYLING
- * 
- * Design Principles:
- * 1. Consistent visual hierarchy
- * 2. Accessible color choices
- * 3. Responsive layouts
- * 4. Clear typography
- */
-
-/* Chart container styling for responsiveness */
 .chart-container {
-    width: 100%;
-    height: 600px;
-    /* Increased height */
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-inner);
     min-height: 400px;
     position: relative;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-#visualization-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-}
-
-.error-message {
-    padding: 20px;
-    color: #8B0000;
-    text-align: center;
-    background: rgba(139, 0, 0, 0.1);
-    border-radius: 8px;
-    margin: 20px 0;
-}
-
-/* Accessibility-focused styles */
-.axis-label {
-    font-size: 14px;
-    font-weight: 500;
-    /* High contrast for readability */
-    fill: #333;
-}
-
-/* Interactive element styling */
-.dot {
-    fill: #8B0000;
-    stroke: white;
-    stroke-width: 2px;
-    transition: fill 0.2s ease, r 0.2s ease;
-    pointer-events: all;
-    cursor: pointer;
-}
-
-/* Animation definitions */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive design breakpoints */
-@media (max-width: 768px) {
-    .visualization {
-        padding: 1rem;
-    }
-
-    .tooltip {
-        font-size: 12px;
-        padding: 8px 12px;
-    }
 }
 
 /* Chart Responsive Styles */
@@ -384,14 +310,15 @@ svg {
     fill: #8B0000;
     stroke: white;
     stroke-width: 2px;
-    transition: fill 0.2s ease, r 0.2s ease;
+    transition: r 0.2s ease, fill 0.2s ease;
     pointer-events: all;
     cursor: pointer;
 }
 
 .dot:hover {
     fill: var(--accent-color);
-    r: 8;
+    transform: scale(1.2);
+    cursor: pointer;
 }
 
 /* Line chart specific styles */
@@ -741,167 +668,117 @@ svg {
 }
 
 /* Genre chart specific styles */
-.genre-line {
+.genre-label {
+    pointer-events: none;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8),
+        -1px -1px 2px rgba(255, 255, 255, 0.8),
+        1px -1px 2px rgba(255, 255, 255, 0.8),
+        -1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.trend-line {
+    pointer-events: none;
+}
+
+circle {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+circle:hover {
+    filter: drop-shadow(0 0 5px rgba(139, 0, 0, 0.5));
+}
+
+/* Timeline chart specific styles */
+.line {
     fill: none;
     stroke: #8B0000;
-    stroke-width: 2;
-    stroke-opacity: 0.3;
-    stroke-dasharray: 5, 5;
+    stroke-width: 3;
+    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
 }
 
-.genre-point {
+.area {
+    fill: url(#area-gradient);
+    transition: opacity 0.3s ease;
+}
+
+.dot {
     fill: #8B0000;
     stroke: white;
-    stroke-width: 2;
-    transition: all 0.3s ease;
+    stroke-width: 2px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.genre-label {
-    font-size: 12px;
-    font-weight: 500;
+.guide-line {
+    stroke: rgba(139, 0, 0, 0.3);
+    stroke-width: 1px;
+    stroke-dasharray: 4, 4;
     pointer-events: none;
-    text-shadow: 1px 1px 2px white, -1px -1px 2px white;
 }
 
 .grid line {
     stroke: #e0e0e0;
     stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
 }
 
 .grid path {
     stroke-width: 0;
 }
 
-/* Animation for genre points */
-.genre-point {
-    animation: fadeInScale 0.5s ease forwards;
-    animation-delay: calc(var(--index) * 100ms);
+.axis-label {
+    font-size: 12px;
+    fill: #666;
 }
 
-@keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0);
-    }
-
-    to {
-        opacity: 0.7;
-        transform: scale(1);
-    }
-}
-
-/* Enhanced tooltip styles */
-.genre-tooltip {
-    background: rgba(0, 0, 0, 0.95);
-    color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    max-width: 300px;
-    pointer-events: none;
-}
-
-.genre-tooltip .tooltip-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.genre-tooltip .tooltip-header strong {
-    color: #FF4444;
-    font-size: 1.1rem;
-    display: block;
-}
-
-.genre-tooltip .stat-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 0.25rem 0;
-}
-
-.genre-tooltip .stat-label {
-    color: #aaa;
-}
-
-.genre-tooltip .stat-value {
-    font-weight: 500;
-}
-
-.chart-container {
-    width: 100%;
-    height: 100%;
-    min-height: 500px;
-    position: relative;
-}
-
-/* Timeline Visualization Styles */
-
-/* Main line styling for the trend line */
-.line {
-    fill: none;
-    stroke: #8B0000;
-    /* Dark red color */
-    stroke-width: 3;
-    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
-    /* Adds depth */
-}
-
-/* Data point styling */
-.dot {
-    fill: #8B0000;
-    /* Matches line color */
-    stroke: white;
-    /* White border for contrast */
-    stroke-width: 2px;
-    cursor: pointer;
-    /* Shows interactivity */
-    transition: fill 0.2s ease, r 0.2s ease;
-    /* Smooth transitions */
-}
-
-/* Hover state for data points */
-.dot:hover {
-    fill: var(--accent-color);
-    r: 8;
-    /* Increases size on hover */
-}
-
-/* Tooltip container styling */
 .tooltip {
-    position: fixed;
-    /* Follows cursor */
+    position: absolute;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid #8B0000;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 280px;
-    z-index: 1000;
-    /* Ensures tooltip stays on top */
+    border-radius: 4px;
+    pointer-events: none;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
 }
 
-/* Tooltip header styling */
 .tooltip-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
-.tooltip-header strong {
-    font-size: 1.2em;
-    color: #8B0000;
+.growth {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 3px;
 }
 
-/* Tooltip content grid layout */
+.growth.positive {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.growth.negative {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.tooltip hr {
+    border: none;
+    border-top: 1px solid rgba(139, 0, 0, 0.2);
+    margin: 5px 0;
+}
+
 .tooltip-grid {
     display: grid;
     gap: 8px;
 }
 
-/* Tooltip statistics styling */
 .tooltip-stat {
     display: flex;
     justify-content: space-between;
@@ -910,26 +787,18 @@ svg {
 
 .stat-label {
     color: #666;
-    font-size: 0.9em;
+    font-size: 12px;
 }
 
 .stat-value {
-    font-weight: 500;
+    font-weight: 600;
     color: #333;
 }
 
-/* Axis styling */
-.axis-label {
-    font-size: 12px;
-    fill: #666;
-}
-
-/* Responsive design adjustments */
-@media (max-width: 768px) {
-    .tooltip {
-        font-size: 12px;
-        padding: 8px 12px;
-    }
+.chart-title {
+    font-size: 24px;
+    font-weight: bold;
+    fill: #333;
 }
 
 /* Timeline specific styles */
@@ -1010,322 +879,4 @@ svg {
 .growth.negative {
     background: rgba(220, 53, 69, 0.1);
     color: #dc3545;
-}
-
-/* Publisher Chart Specific Styles */
-.bar {
-    transition: all 0.3s ease;
-}
-
-.publisher-tooltip {
-    background: rgba(255, 255, 255, 0.98);
-    border: 1px solid #8B0000;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    max-width: 320px;
-    font-size: 14px;
-}
-
-.tooltip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(139, 0, 0, 0.2);
-}
-
-.tooltip-header strong {
-    font-size: 18px;
-    color: #8B0000;
-}
-
-.market-share {
-    background: rgba(139, 0, 0, 0.1);
-    color: #8B0000;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.tooltip-content {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.tooltip-section {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.stat-label {
-    color: #666;
-}
-
-.stat-value {
-    font-weight: 500;
-    color: #333;
-}
-
-.regional-sales {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.region {
-    display: grid;
-    grid-template-columns: 30px 1fr 50px;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-}
-
-.region-label {
-    font-weight: 500;
-    color: #666;
-}
-
-.region-bar {
-    height: 6px;
-    background: #8B0000;
-    border-radius: 3px;
-    transition: width 0.3s ease;
-}
-
-.region-value {
-    font-size: 13px;
-    color: #333;
-    text-align: right;
-}
-
-.axis-label {
-    font-weight: 500;
-    fill: #666;
-}
-
-.chart-title {
-    fill: #333;
-}
-
-/* Chart Animations */
-.chart-animation {
-    opacity: 0;
-    animation: fadeInUp 0.8s ease-out forwards;
-}
-
-/* Bar chart animations */
-.bar {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInBar 0.6s ease-out forwards;
-}
-
-.bar:nth-child(n) {
-    animation-delay: calc(0.1s * var(--index, 0));
-}
-
-/* Line chart animations */
-.line {
-    opacity: 0;
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    animation: drawLine 2s ease-out forwards;
-}
-
-.area {
-    opacity: 0;
-    animation: fadeIn 1s ease-out 0.5s forwards;
-}
-
-.dot {
-    opacity: 0;
-    animation: fadeInDot 0.5s ease-out forwards;
-}
-
-/* Animation keyframes */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeInBar {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes drawLine {
-    to {
-        stroke-dashoffset: 0;
-        opacity: 1;
-    }
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes fadeInDot {
-    from {
-        opacity: 0;
-        transform: scale(0);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Ensure tooltips are above other elements */
-.tooltip {
-    z-index: 1000;
-    pointer-events: none;
-}
-
-/* Add these new styles for the analysis sections */
-.analysis-section {
-    margin: 2rem 0;
-    padding: 1.5rem;
-    background: rgba(139, 0, 0, 0.05);
-    border-radius: 8px;
-}
-
-.analysis-section h3 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.analysis-section ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-.analysis-section li {
-    margin-bottom: 0.8rem;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.analysis-section li:before {
-    content: "•";
-    color: var(--primary-color);
-    position: absolute;
-    left: 0;
-}
-
-.analysis-section strong {
-    color: var(--primary-color);
-}
-
-.visualization {
-    margin: 2rem 0;
-    padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.chart-container {
-    width: 100%;
-    height: 500px;
-    margin: 1rem 0;
-}
-
-/* Ensure single visualization per page */
-.content-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.visualization-description {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    border: 1px solid rgba(139, 0, 0, 0.1);
-}
-
-.visualization-description h3 {
-    color: #8B0000;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-}
-
-.visualization-description ul {
-    margin-top: 0.5rem;
-    padding-left: 1.5rem;
-}
-
-.visualization-description ul ul {
-    margin-top: 0.25rem;
-    margin-bottom: 0.5rem;
-}
-
-.visualization-description li {
-    margin-bottom: 0.5rem;
-    line-height: 1.4;
-}
-
-.visualization-insights {
-    background: rgba(139, 0, 0, 0.05);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-top: 2rem;
-}
-
-.visualization-insights h3 {
-    color: #8B0000;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-}
-
-.visualization-insights ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-.visualization-insights li {
-    margin-bottom: 0.75rem;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.visualization-insights li:before {
-    content: "•";
-    color: #8B0000;
-    font-weight: bold;
-    position: absolute;
-    left: 0;
-}
-
-.visualization-insights strong {
-    color: #8B0000;
 }
