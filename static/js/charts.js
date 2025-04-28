@@ -307,27 +307,11 @@ function createPublisherChart(data) {
 
 // Create timeline chart with animations
 function createTimelineChart(data) {
-    const svg = createResponsiveChart("#visualization-3");
-
-    // Add gradient for area
-    const gradient = svg.append("defs")
-        .append("linearGradient")
-        .attr("id", "area-gradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%");
-
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.6);
-
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.1);
+    // Filter out years after 2016 (as data becomes incomplete)
+    const filteredData = data.filter(d => d.Year !== null && d.Year <= 2016);
 
     // Process data by year with additional metrics
-    const yearlyData = d3.rollup(data,
+    const yearlyData = d3.rollup(filteredData,
         v => ({
             sales: d3.sum(v, d => d.Global_Sales),
             gameCount: v.length,
@@ -347,7 +331,7 @@ function createTimelineChart(data) {
         topGenre: Array.from(stats.genres.entries())
             .sort((a, b) => b[1] - a[1])[0][0]
     }))
-        .filter(d => d.year !== null && !isNaN(d.year))
+        .filter(d => d.year !== null)
         .sort((a, b) => a.year - b.year);
 
     // Calculate year-over-year growth
@@ -356,6 +340,28 @@ function createTimelineChart(data) {
             d.growth = ((d.sales - timelineData[i - 1].sales) / timelineData[i - 1].sales * 100).toFixed(1);
         }
     });
+
+    // Update chart title to reflect actual data range
+    const yearRange = `${d3.min(timelineData, d => d.year)}-${d3.max(timelineData, d => d.year)}`;
+
+    const svg = createResponsiveChart("#visualization-3");
+
+    // Add gradient for area
+    const gradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id", "area-gradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%");
+
+    gradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#8B0000")
+        .attr("stop-opacity", 0.6);
+
+    gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#8B0000")
+        .attr("stop-opacity", 0.1);
 
     // Create scales
     const x = d3.scaleLinear()
@@ -424,7 +430,9 @@ function createTimelineChart(data) {
         .attr("cy", d => y(d.sales))
         .attr("r", 6)
         .attr("fill", "#8B0000")
-        .attr("opacity", 0.7);
+        .attr("opacity", 0.7)
+        .style("cursor", "pointer")
+        .style("filter", "drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2))");
 
     // Create tooltip
     const tooltip = d3.select("body").append("div")
@@ -433,77 +441,81 @@ function createTimelineChart(data) {
         .style("position", "absolute")
         .style("pointer-events", "none");
 
-    // Enhanced dot interaction without movement
-    svg.selectAll(".dot")
-        .on("mouseover", function (event, d) {
-            const dot = d3.select(this);
+    // Enhanced dot interaction
+    dots.on("mouseover", function (event, d) {
+        const dot = d3.select(this);
 
-            // Enhance dot appearance without changing position
-            dot.transition()
-                .duration(200)
-                .attr("r", 8)
-                .style("fill", "#FF4444")
-                .attr("opacity", 1);
+        // Enhance dot appearance
+        dot.transition()
+            .duration(200)
+            .attr("r", 8)
+            .attr("fill", "#FF4444")
+            .attr("opacity", 1)
+            .style("filter", "drop-shadow(0 4px 4px rgba(0, 0, 0, 0.3))");
 
-            // Calculate tooltip position
-            const tooltipX = x(d.year) + margin.left + 20;
-            const tooltipY = y(d.sales) + margin.top - 28;
+        // Calculate tooltip position
+        const tooltipX = x(d.year) + margin.left + 20;
+        const tooltipY = y(d.sales) + margin.top - 28;
 
-            // Show tooltip
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", 0.9);
+        // Show tooltip
+        tooltip.transition()
+            .duration(200)
+            .style("opacity", 0.9);
 
-            tooltip.html(`
-                <div class="tooltip-header">
-                    <strong>${d.year}</strong>
-                    <span class="growth ${d.growth > 0 ? 'positive' : 'negative'}">
-                        ${d.growth ? (d.growth > 0 ? '↑' : '↓') + Math.abs(d.growth) + '%' : ''}
-                    </span>
+        tooltip.html(`
+            <div class="tooltip-header">
+                <strong>${d.year}</strong>
+                <span class="growth ${d.growth > 0 ? 'positive' : 'negative'}">
+                    ${d.growth ? (d.growth > 0 ? '↑' : '↓') + Math.abs(d.growth) + '%' : ''}
+                </span>
+            </div>
+            <hr>
+            <div class="tooltip-grid">
+                <div class="tooltip-stat">
+                    <span class="stat-label">Total Sales:</span>
+                    <span class="stat-value">${d.sales.toFixed(2)}M</span>
                 </div>
-                <hr>
-                <div class="tooltip-grid">
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Total Sales:</span>
-                        <span class="stat-value">${d.sales.toFixed(2)}M</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Games Released:</span>
-                        <span class="stat-value">${d.gameCount}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Avg Sales/Game:</span>
-                        <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Top Game:</span>
-                        <span class="stat-value">${d.topGame.Name}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Popular Genre:</span>
-                        <span class="stat-value">${d.topGenre}</span>
-                    </div>
+                <div class="tooltip-stat">
+                    <span class="stat-label">Games Released:</span>
+                    <span class="stat-value">${d.gameCount}</span>
                 </div>
-            `)
-                .style("left", `${tooltipX}px`)
-                .style("top", `${tooltipY}px`);
+                <div class="tooltip-stat">
+                    <span class="stat-label">Avg Sales/Game:</span>
+                    <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
+                </div>
+                <div class="tooltip-stat">
+                    <span class="stat-label">Top Game:</span>
+                    <span class="stat-value">${d.topGame.Name}</span>
+                </div>
+                <div class="tooltip-stat">
+                    <span class="stat-label">Popular Genre:</span>
+                    <span class="stat-value">${d.topGenre}</span>
+                </div>
+            </div>
+        `)
+            .style("left", `${event.pageX + 15}px`)
+            .style("top", `${event.pageY - 28}px`);
 
-            // Add vertical guide line
-            svg.append("line")
-                .attr("class", "guide-line")
-                .attr("x1", x(d.year))
-                .attr("x2", x(d.year))
-                .attr("y1", height)
-                .attr("y2", y(d.sales));
-        })
+        // Add vertical guide line
+        svg.append("line")
+            .attr("class", "guide-line")
+            .attr("x1", x(d.year))
+            .attr("x2", x(d.year))
+            .attr("y1", height)
+            .attr("y2", y(d.sales))
+            .style("stroke", "rgba(139, 0, 0, 0.5)")
+            .style("stroke-width", "1px")
+            .style("stroke-dasharray", "5,5");
+    })
         .on("mouseout", function () {
             // Reset dot appearance
             d3.select(this)
                 .transition()
                 .duration(200)
                 .attr("r", 6)
-                .style("fill", "#8B0000")
-                .attr("opacity", 0.7);
+                .attr("fill", "#8B0000")
+                .attr("opacity", 0.7)
+                .style("filter", "drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2))");
 
             // Hide tooltip
             tooltip.transition()
@@ -532,155 +544,191 @@ function createTimelineChart(data) {
         .duration(1000)
         .style("opacity", 1);
 
-    // Add chart title with animation
+    // Update chart title with actual date range
     svg.append("text")
         .attr("class", "chart-title")
         .attr("x", width / 2)
         .attr("y", -margin.top / 2)
         .attr("text-anchor", "middle")
-        .style("opacity", 0)
-        .text("Video Game Sales Timeline (1980-2020)")
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .style("font-size", "20px")
+        .style("font-weight", "bold")
+        .text(`Video Game Sales Timeline (${yearRange})`);
 }
 
 // Create genre chart with animations
 function createGenreChart(data) {
-    const svg = createResponsiveChart("#visualization-2");
+    // Update margins to prevent cutoff
+    const margin = { top: 60, right: 120, bottom: 80, left: 90 };
+    const width = Math.min(1100, window.innerWidth - 100) - margin.left - margin.right;
+    const height = Math.min(600, window.innerHeight * 0.7) - margin.top - margin.bottom;
 
-    // Add chart title
-    svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", width / 2)
-        .attr("y", -margin.top / 2)
-        .attr("text-anchor", "middle")
-        .text("Video Game Genres Analysis")
-        .style("font-size", "24px")
-        .style("font-weight", "bold");
+    const svg = d3.select("#visualization-2")
+        .select(".chart-container")
+        .append("svg")
+        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // Process data for genres
     const genreData = d3.rollup(data,
         v => ({
             sales: d3.sum(v, d => d.Global_Sales),
-            count: v.length
+            count: v.length,
+            naSales: d3.sum(v, d => d.NA_Sales),
+            euSales: d3.sum(v, d => d.EU_Sales),
+            jpSales: d3.sum(v, d => d.JP_Sales),
+            topGame: v.reduce((prev, current) =>
+                (prev.Global_Sales > current.Global_Sales) ? prev : current),
+            avgSales: d3.sum(v, d => d.Global_Sales) / v.length,
+            yearlyData: Array.from(d3.rollup(v,
+                w => d3.sum(w, x => x.Global_Sales),
+                w => w.Year
+            )).sort((a, b) => b[1] - a[1])
         }),
         d => d.Genre
     );
 
+    const totalSales = d3.sum(data, d => d.Global_Sales);
     const scatterData = Array.from(genreData, ([genre, values]) => ({
         genre: genre,
         sales: values.sales,
-        count: values.count
+        count: values.count,
+        naSales: values.naSales,
+        euSales: values.euSales,
+        jpSales: values.jpSales,
+        topGame: values.topGame,
+        avgSales: values.avgSales,
+        peakYear: values.yearlyData[0]?.[0]
     }));
 
-    // Create scales
+    // Create scales with padding
     const x = d3.scaleLinear()
-        .domain([0, d3.max(scatterData, d => d.count)])
-        .range([0, width]);
+        .domain([0, d3.max(scatterData, d => d.count) * 1.1])
+        .range([0, width])
+        .nice();
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max(scatterData, d => d.sales)])
-        .range([height, 0]);
+        .domain([0, d3.max(scatterData, d => d.sales) * 1.1])
+        .range([height, 0])
+        .nice();
 
-    // Add axes with animations
+    // Add gridlines
     svg.append("g")
+        .attr("class", "grid")
+        .call(d3.axisLeft(y)
+            .tickSize(-width)
+            .tickFormat("")
+        );
+
+    svg.append("g")
+        .attr("class", "grid")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x)
+            .tickSize(-height)
+            .tickFormat("")
+        );
+
+    // Add axes with labels
+    svg.append("g")
+        .attr("class", "x-axis")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x))
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("x", width / 2)
+        .attr("y", 40)
+        .style("text-anchor", "middle")
+        .text("Number of Games Released");
 
     svg.append("g")
+        .attr("class", "y-axis")
         .call(d3.axisLeft(y))
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -60)
+        .style("text-anchor", "middle")
+        .text("Global Sales (Millions)");
+
+    // Enhanced tooltip
+    const tooltip = d3.select("body")
+        .append("div")
+        .attr("class", "genre-tooltip")
         .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .style("position", "absolute")
+        .style("pointer-events", "none");
 
-    // Add axes labels
-    addAxesLabels(svg, "Number of Games", "Global Sales (millions)");
-
-    // Add scatter points with animations
-    svg.selectAll("circle")
+    // Add scatter points with enhanced interactivity
+    const points = svg.selectAll(".point")
         .data(scatterData)
         .enter()
         .append("circle")
+        .attr("class", "genre-point")
         .attr("cx", d => x(d.count))
-        .attr("cy", height) // Start from bottom
-        .attr("r", 0) // Start with radius 0
+        .attr("cy", d => y(d.sales))
+        .attr("r", 8)
         .attr("fill", "#8B0000")
         .attr("opacity", 0.7)
         .on("mouseover", function (event, d) {
-            // Enhanced point animation
-            d3.select(this)
-                .transition()
+            const point = d3.select(this);
+
+            // Enhance point appearance
+            point.transition()
                 .duration(200)
                 .attr("r", 12)
                 .attr("fill", "#FF4444")
                 .attr("opacity", 1);
 
-            // Calculate genre-specific statistics
-            const genreGames = data.filter(game => game.Genre === d.genre);
-            const topGame = genreGames.reduce((prev, current) =>
-                (prev.Global_Sales > current.Global_Sales) ? prev : current);
-            const topPublisher = d3.rollup(genreGames,
-                v => d3.sum(v, d => d.Global_Sales),
-                d => d.Publisher);
-            const bestPublisher = Array.from(topPublisher, ([pub, sales]) => ({ pub, sales }))
-                .sort((a, b) => b.sales - a.sales)[0];
-
+            // Show tooltip
             tooltip.transition()
                 .duration(200)
-                .style("opacity", .9);
+                .style("opacity", 0.95);
+
             tooltip.html(`
-                <strong>${d.genre}</strong><br>
-                <hr>
-                <div class="tooltip-grid">
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Total Sales:</span>
-                        <span class="stat-value">${d.sales.toFixed(2)}M</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Market Share:</span>
-                        <span class="stat-value">${(d.sales / totalSales * 100).toFixed(1)}%</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Number of Games:</span>
-                        <span class="stat-value">${d.count}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Avg Sales/Game:</span>
-                        <span class="stat-value">${(d.sales / d.count).toFixed(2)}M</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Top Game:</span>
-                        <span class="stat-value">${topGame.Name}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Best Publisher:</span>
-                        <span class="stat-value">${bestPublisher.pub}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Peak Year:</span>
-                        <span class="stat-value">${d.peakYear || 'N/A'}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Regional Success:</span>
-                        <span class="stat-value">
-                            NA: ${d.naSales?.toFixed(2)}M<br>
-                            EU: ${d.euSales?.toFixed(2)}M<br>
-                            JP: ${d.jpSales?.toFixed(2)}M
-                        </span>
-                    </div>
+                <div class="tooltip-header">
+                    <strong>${d.genre}</strong>
+                    <span class="market-share">${(d.sales / totalSales * 100).toFixed(1)}% Market Share</span>
                 </div>
-                <div class="tooltip-footer">
-                    <span class="tooltip-hint">Click for genre analysis</span>
+                <div class="tooltip-content">
+                    <div class="tooltip-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Global Sales:</span>
+                            <span class="stat-value">${d.sales.toFixed(1)}M</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Games Released:</span>
+                            <span class="stat-value">${d.count}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Sales/Game:</span>
+                            <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
+                        </div>
+                    </div>
+                    <div class="tooltip-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Regional Sales:</span>
+                            <span class="stat-value">
+                                NA: ${d.naSales.toFixed(1)}M<br>
+                                EU: ${d.euSales.toFixed(1)}M<br>
+                                JP: ${d.jpSales.toFixed(1)}M
+                            </span>
+                        </div>
+                    </div>
+                    <div class="tooltip-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Top Game:</span>
+                            <span class="stat-value">${d.topGame.Name}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Peak Year:</span>
+                            <span class="stat-value">${d.peakYear || 'N/A'}</span>
+                        </div>
+                    </div>
                 </div>
             `)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+                .style("left", `${event.pageX + 15}px`)
+                .style("top", `${event.pageY - 28}px`);
         })
         .on("mouseout", function () {
             d3.select(this)
@@ -693,14 +741,9 @@ function createGenreChart(data) {
             tooltip.transition()
                 .duration(500)
                 .style("opacity", 0);
-        })
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 100)
-        .attr("cy", d => y(d.sales))
-        .attr("r", 8);
+        });
 
-    // Add genre labels
+    // Add genre labels with better positioning
     svg.selectAll(".genre-label")
         .data(scatterData)
         .enter()
@@ -710,32 +753,18 @@ function createGenreChart(data) {
         .attr("y", d => y(d.sales) - 15)
         .attr("text-anchor", "middle")
         .style("font-size", "12px")
-        .style("opacity", 0)
-        .text(d => d.genre)
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 100 + 500)
-        .style("opacity", 1);
+        .style("font-weight", "500")
+        .text(d => d.genre);
 
-    // Add trend line
-    const line = d3.line()
-        .x(d => x(d.count))
-        .y(d => y(d.sales));
-
-    const sortedData = scatterData.sort((a, b) => a.count - b.count);
-
-    svg.append("path")
-        .datum(sortedData)
-        .attr("class", "trend-line")
-        .attr("fill", "none")
-        .attr("stroke", "#FF4444")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,5")
-        .attr("d", line)
-        .style("opacity", 0)
-        .transition()
-        .duration(1500)
-        .style("opacity", 0.5);
+    // Add chart title
+    svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .style("font-size", "20px")
+        .style("font-weight", "bold")
+        .text("Video Game Genres: Sales vs. Number of Games");
 }
 
 // Load data and create charts

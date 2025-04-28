@@ -668,13 +668,77 @@ svg {
 }
 
 /* Genre chart specific styles */
+.genre-tooltip {
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 300px;
+    z-index: 1000;
+}
+
+.genre-tooltip .tooltip-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.genre-tooltip .tooltip-header strong {
+    color: #FF4444;
+    font-size: 1.1rem;
+    display: block;
+}
+
+.genre-tooltip .market-share {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.genre-tooltip .tooltip-section {
+    margin: 0.5rem 0;
+}
+
+.genre-tooltip .stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.25rem 0;
+}
+
+.genre-tooltip .stat-label {
+    color: #aaa;
+}
+
+.genre-tooltip .stat-value {
+    font-weight: 500;
+}
+
+.chart-container {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    position: relative;
+}
+
+.genre-point {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
 .genre-label {
     pointer-events: none;
-    font-weight: 500;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8),
-        -1px -1px 2px rgba(255, 255, 255, 0.8),
-        1px -1px 2px rgba(255, 255, 255, 0.8),
-        -1px 1px 2px rgba(255, 255, 255, 0.8);
+    text-shadow: 1px 1px 2px white, -1px -1px 2px white;
+}
+
+.grid line {
+    stroke: #e0e0e0;
+    stroke-opacity: 0.7;
+}
+
+.axis-label {
+    fill: #666;
+    font-size: 14px;
 }
 
 .trend-line {
