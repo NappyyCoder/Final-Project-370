@@ -3,11 +3,82 @@ const margin = { top: 80, right: 100, bottom: 80, left: 90 };
 const width = 1100 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
-// Global tooltip
+// Global tooltip setup - use this instead of creating multiple tooltips
 const tooltip = d3.select("body")
     .append("div")
     .attr("class", "tooltip")
-    .style("opacity", 0);
+    .style("opacity", 0)
+    .style("position", "absolute")
+    .style("pointer-events", "none");
+
+// Utility function to create tooltips for any chart
+function showTooltip(event, d, content, offsetX = 10, offsetY = -28) {
+    tooltip.transition()
+        .duration(200)
+        .style("opacity", 0.98);
+
+    tooltip.html(content)
+        .style("left", (event.pageX + offsetX) + "px")
+        .style("top", (event.pageY + offsetY) + "px");
+}
+
+function hideTooltip() {
+    tooltip.transition()
+        .duration(200)
+        .style("opacity", 0);
+}
+
+// Example usage for a bar chart
+function addBarTooltip(selection, getContent) {
+    selection
+        .on("mouseover", function (event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("fill", "url(#bar-gradient)")
+                .style("filter", "drop-shadow(0 6px 8px rgba(0, 0, 0, 0.2))")
+                .attr("transform", "scale(1, 1.02)");
+
+            showTooltip(event, d, getContent(d));
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("fill", "url(#bar-gradient)")
+                .style("filter", "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))")
+                .attr("transform", "scale(1, 1)");
+
+            hideTooltip();
+        });
+}
+
+// Example usage for a line chart point
+function addLinePointTooltip(selection, getContent) {
+    selection
+        .on("mouseover", function (event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("r", 10)
+                .style("fill", "#FF4444")
+                .style("filter", "drop-shadow(0 0 6px rgba(255, 68, 68, 0.6))")
+                .attr("opacity", 1);
+
+            showTooltip(event, d, getContent(d));
+        })
+        .on("mouseout", function () {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("r", 6)
+                .style("fill", "#8B0000")
+                .style("filter", "none")
+                .attr("opacity", 0.7);
+
+            hideTooltip();
+        });
+}
 
 // Utility function to create responsive chart base
 function createResponsiveChart(selector) {
@@ -936,4 +1007,34 @@ function getMarketContext(year, data) {
     }
 
     return "No specific market context available";
+}
+
+// Helper functions for tooltips
+function getMarketContext(year) {
+    if (year >= 1985 && year <= 1990) return "NES era, early console market growth";
+    if (year >= 1991 && year <= 1995) return "16-bit console wars (SNES vs Genesis)";
+    if (year >= 1996 && year <= 2000) return "3D gaming revolution (PS1, N64)";
+    if (year >= 2001 && year <= 2005) return "6th generation consoles (PS2, Xbox, GameCube)";
+    if (year >= 2006 && year <= 2012) return "HD gaming era (PS3, Xbox 360, Wii)";
+    if (year >= 2013 && year <= 2020) return "8th generation consoles and digital distribution";
+    return "Limited market data available";
+}
+
+function getTopGameForGenre(genre) {
+    return data
+        .filter(d => d.Genre === genre)
+        .sort((a, b) => b.Global_Sales - a.Global_Sales)[0] || { Name: 'N/A' };
+}
+
+function getBestPublisherForGenre(genre) {
+    const publishers = d3.rollup(
+        data.filter(d => d.Genre === genre),
+        v => d3.sum(v, d => d.Global_Sales),
+        d => d.Publisher
+    );
+
+    const bestPub = Array.from(publishers.entries())
+        .sort((a, b) => b[1] - a[1])[0];
+
+    return bestPub ? { pub: bestPub[0], sales: bestPub[1] } : { pub: 'N/A', sales: 0 };
 }
