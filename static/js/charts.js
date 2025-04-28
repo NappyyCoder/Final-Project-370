@@ -422,12 +422,9 @@ function createTimelineChart(data) {
         .attr("class", "dot")
         .attr("cx", d => x(d.year))
         .attr("cy", d => y(d.sales))
-        .attr("r", 0)
+        .attr("r", 6)
         .attr("fill", "#8B0000")
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 100 + 1000)
-        .attr("r", 6);
+        .attr("opacity", 0.7);
 
     // Create tooltip
     const tooltip = d3.select("body").append("div")
@@ -436,24 +433,23 @@ function createTimelineChart(data) {
         .style("position", "absolute")
         .style("pointer-events", "none");
 
-    // Enhanced dot interaction
+    // Enhanced dot interaction without movement
     svg.selectAll(".dot")
         .on("mouseover", function (event, d) {
             const dot = d3.select(this);
 
-            // Enhance dot appearance
+            // Enhance dot appearance without changing position
             dot.transition()
                 .duration(200)
                 .attr("r", 8)
-                .style("fill", "#FF4444");
+                .style("fill", "#FF4444")
+                .attr("opacity", 1);
 
-            // Calculate tooltip position relative to the dot
-            const dotX = parseFloat(dot.attr("cx"));
-            const dotY = parseFloat(dot.attr("cy"));
-            const tooltipX = x(d.year) + margin.left + 20; // 20px offset from dot
-            const tooltipY = y(d.sales) + margin.top - 28; // Position above the dot
+            // Calculate tooltip position
+            const tooltipX = x(d.year) + margin.left + 20;
+            const tooltipY = y(d.sales) + margin.top - 28;
 
-            // Show and position tooltip
+            // Show tooltip
             tooltip.transition()
                 .duration(200)
                 .style("opacity", 0.9);
@@ -492,15 +488,12 @@ function createTimelineChart(data) {
                 .style("left", `${tooltipX}px`)
                 .style("top", `${tooltipY}px`);
 
-            // Add vertical guide line with animation
+            // Add vertical guide line
             svg.append("line")
                 .attr("class", "guide-line")
                 .attr("x1", x(d.year))
                 .attr("x2", x(d.year))
                 .attr("y1", height)
-                .attr("y2", height)
-                .transition()
-                .duration(200)
                 .attr("y2", y(d.sales));
         })
         .on("mouseout", function () {
@@ -509,19 +502,16 @@ function createTimelineChart(data) {
                 .transition()
                 .duration(200)
                 .attr("r", 6)
-                .style("fill", "#8B0000");
+                .style("fill", "#8B0000")
+                .attr("opacity", 0.7);
 
             // Hide tooltip
             tooltip.transition()
                 .duration(200)
                 .style("opacity", 0);
 
-            // Remove guide line with animation
-            svg.selectAll(".guide-line")
-                .transition()
-                .duration(200)
-                .attr("y2", height)
-                .remove();
+            // Remove guide line
+            svg.selectAll(".guide-line").remove();
         });
 
     // Add animated axes
