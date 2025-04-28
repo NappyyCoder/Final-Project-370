@@ -8,14 +8,6 @@
     <link rel="stylesheet" href="./static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="./static/js/charts.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.VideoGameViz && window.VideoGameViz.initialize) {
-                window.VideoGameViz.initialize();
-            }
-        });
-    </script>
 </head>
 
 <body>
@@ -39,6 +31,15 @@
             <div id="visualization-container"></div>
         </div>
     </main>
+
+    <!-- Move scripts to end of body and remove duplicate initialization -->
+    <script src="./static/js/charts.js"></script>
+    <script>
+        // Single initialization point
+        if (window.VideoGameViz && window.VideoGameViz.initialize) {
+            window.VideoGameViz.initialize();
+        }
+    </script>
 </body>
 
 </html>

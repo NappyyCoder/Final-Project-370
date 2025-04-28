@@ -31,7 +31,6 @@
             <p>This visualization explores the relationship between game genres, their popularity, and sales
                 performance. The scatter plot reveals insights about market preferences and genre success rates.</p>
 
-            <!-- Fixed visualization container structure -->
             <div class="visualization">
                 <div id="visualization-container" class="chart-container"></div>
             </div>
@@ -60,18 +59,7 @@
         </section>
     </main>
 
-    <!-- Move scripts to end of body -->
     <script src="./static/js/charts.js"></script>
-    <script>
-        // Initialize visualization after DOM is loaded
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.VideoGameViz && window.VideoGameViz.initialize) {
-                window.VideoGameViz.initialize();
-            } else {
-                console.error('VideoGameViz not initialized properly');
-            }
-        });
-    </script>
 </body>
 
 </html>
