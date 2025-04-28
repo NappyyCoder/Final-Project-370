@@ -31,7 +31,12 @@ const margin = {
  * - Accessibility: Clear labels and contrast
  */
 function createPublisherChart(data) {
-    const svg = createResponsiveChart("#visualization-1");
+    const { svg, width, height } = createResponsiveChart("#visualization-1");
+
+    if (!svg || !width || !height) {
+        console.error("Failed to create chart container");
+        return;
+    }
 
     // Add gradient definitions for bars
     const gradient = svg.append("defs")
@@ -50,7 +55,7 @@ function createPublisherChart(data) {
     gradient.append("stop")
         .attr("offset", "100%")
         .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 1);
+        .attr("stop-opacity", 0.8);
 
     // Add chart title with animation
     svg.append("text")
@@ -779,7 +784,9 @@ function createTimelineChart(data) {
  * - Screen size adaptations
  */
 function createResponsiveChart(selector) {
-    // Calculate available space
+    // Remove any existing SVG first
+    d3.select(selector).select(".chart-container svg").remove();
+
     const containerWidth = Math.min(1200, window.innerWidth - 40);
     const containerHeight = Math.min(700, window.innerHeight * 0.7);
 
@@ -789,6 +796,8 @@ function createResponsiveChart(selector) {
     const svg = d3.select(selector)
         .select(".chart-container")
         .append("svg")
+        .attr("width", containerWidth)
+        .attr("height", containerHeight)
         .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
         .attr("preserveAspectRatio", "xMidYMid meet")
         .append("g")
@@ -861,6 +870,8 @@ function getBaseUrl() {
  * - User-friendly error messages
  * - Console logging for debugging
  */
+const dataPath = `${getBaseUrl()}/data/vgsales.csv`;
+
 d3.csv(dataPath)
     .then(data => {
         if (!data || data.length === 0) {
@@ -893,17 +904,14 @@ d3.csv(dataPath)
     })
     .catch(error => {
         console.error("Error loading the data:", error);
-        ['visualization-1', 'visualization-2', 'visualization-3'].forEach(vizId => {
-            const vizElement = document.getElementById(vizId);
-            if (vizElement) {
-                vizElement.innerHTML = `
-                    <div class="error-message">
-                        <h3>Error Loading Visualization</h3>
-                        <p>Failed to load data. Please ensure the data file exists and is accessible.</p>
-                        <p>Attempted path: ${dataPath}</p>
-                    </div>
-                `;
-            }
+        document.querySelectorAll('.visualization').forEach(vizElement => {
+            vizElement.innerHTML = `
+                <div class="error-message">
+                    <h3>Error Loading Visualization</h3>
+                    <p>Failed to load data. Please ensure the data file exists and is accessible.</p>
+                    <p>Error details: ${error.message}</p>
+                </div>
+            `;
         });
     });
 
