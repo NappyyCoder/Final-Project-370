@@ -59,6 +59,19 @@ window.VideoGameViz = {};
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 15);
 
+        // Set up dimensions with wider width
+        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        const width = container.clientWidth - margin.left - margin.right;
+        const height = 500; // Maintain height
+
+        // Update SVG container
+        const svg = d3.select('#visualization-container')
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
         // Set up scales
         const x = d3.scaleBand()
             .range([0, width])
@@ -487,39 +500,25 @@ window.VideoGameViz = {};
     // Expose the initialization function to the global namespace
     window.VideoGameViz.initialize = async function () {
         try {
-            // Clear any existing visualizations first
-            d3.select('#visualization-container').selectAll('*').remove();
-            d3.selectAll('.tooltip').remove();
+            const container = document.getElementById('visualization-container');
+            const margin = { top: 40, right: 40, bottom: 60, left: 60 };
 
-            let container = document.getElementById('visualization-container');
-            if (!container) {
-                console.log('Visualization container not found, creating one');
-                // Create the container if it doesn't exist
-                container = document.createElement('div');
-                container.id = 'visualization-container';
-                container.className = 'chart-container';
-
-                // Find the visualization div and append the container
-                const vizDiv = document.querySelector('.visualization');
-                if (!vizDiv) {
-                    throw new Error('No .visualization div found');
-                }
-                vizDiv.appendChild(container);
-            }
-
-            const data = await loadData();
-
-            // Set up SVG
+            // Use container's full width
             width = container.clientWidth - margin.left - margin.right;
-            height = 600 - margin.top - margin.bottom;
+            height = 500;
 
+            // Clear existing content
+            d3.select('#visualization-container').selectAll('*').remove();
+
+            // Create new SVG with updated dimensions
             svg = d3.select('#visualization-container')
                 .append('svg')
                 .attr('width', width + margin.left + margin.right)
                 .attr('height', height + margin.top + margin.bottom)
-                .attr('class', 'chart-animation')
                 .append('g')
                 .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const data = await loadData();
 
             // Determine which chart to create based on the current page
             const currentPage = window.location.pathname;

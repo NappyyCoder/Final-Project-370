@@ -1255,3 +1255,68 @@ circle:hover {
     margin: 0 auto;
     padding: 2rem;
 }
+
+.visualization-description {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(139, 0, 0, 0.1);
+}
+
+.visualization-description h3 {
+    color: #8B0000;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.visualization-description ul {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+.visualization-description ul ul {
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.visualization-description li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.visualization-insights {
+    background: rgba(139, 0, 0, 0.05);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.visualization-insights h3 {
+    color: #8B0000;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.visualization-insights ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.visualization-insights li {
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.visualization-insights li:before {
+    content: "•";
+    color: #8B0000;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.visualization-insights strong {
+    color: #8B0000;
+}
