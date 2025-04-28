@@ -339,7 +339,7 @@ function createTimelineChart(data) {
     );
 
     const timelineData = Array.from(yearlyData, ([year, stats]) => ({
-        year: year,
+        year: +year, // Ensure year is a number
         sales: stats.sales,
         gameCount: stats.gameCount,
         topGame: stats.topGame,
@@ -347,7 +347,7 @@ function createTimelineChart(data) {
         topGenre: Array.from(stats.genres.entries())
             .sort((a, b) => b[1] - a[1])[0][0]
     }))
-        .filter(d => d.year !== null && !isNaN(d.year))
+        .filter(d => d.year !== null && !isNaN(d.year) && d.year >= 1980 && d.year <= 2020) // Filter valid years within a reasonable range
         .sort((a, b) => a.year - b.year);
 
     // Calculate year-over-year growth
