@@ -1196,3 +1196,59 @@ circle:hover {
     z-index: 1000;
     pointer-events: none;
 }
+
+/* Add these new styles for the analysis sections */
+.analysis-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: rgba(139, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.analysis-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.analysis-section ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.analysis-section li {
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.analysis-section li:before {
+    content: "•";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+}
+
+.analysis-section strong {
+    color: var(--primary-color);
+}
+
+.visualization {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+    width: 100%;
+    height: 500px;
+    margin: 1rem 0;
+}
+
+/* Ensure single visualization per page */
+.content-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}

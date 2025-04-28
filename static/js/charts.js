@@ -417,8 +417,7 @@ window.VideoGameViz = {};
             .attr("transform", "rotate(-90)")
             .attr("y", -40)
             .attr("x", -height / 2)
-            .attr("text-anchor", "middle")
-            .text("Global Sales (millions)");
+            .text("Global Sales (Millions)");
 
         // Add dots with animation
         const dots = svg.selectAll(".genre-point")
@@ -492,10 +491,20 @@ window.VideoGameViz = {};
             d3.select('#visualization-container').selectAll('*').remove();
             d3.selectAll('.tooltip').remove();
 
-            const container = document.getElementById('visualization-container');
+            let container = document.getElementById('visualization-container');
             if (!container) {
-                console.error('Visualization container not found');
-                return;
+                console.log('Visualization container not found, creating one');
+                // Create the container if it doesn't exist
+                container = document.createElement('div');
+                container.id = 'visualization-container';
+                container.className = 'chart-container';
+
+                // Find the visualization div and append the container
+                const vizDiv = document.querySelector('.visualization');
+                if (!vizDiv) {
+                    throw new Error('No .visualization div found');
+                }
+                vizDiv.appendChild(container);
             }
 
             const data = await loadData();
