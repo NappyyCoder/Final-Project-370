@@ -13,13 +13,84 @@
  *   - Seaborn for initial exploratory analysis
  */
 
-// Global configurations for chart responsiveness and accessibility
-const margin = {
-    top: 80,     // Increased from 60
-    right: 120,  // Increased from 100
-    bottom: 100, // Increased from 80
-    left: 100    // Increased from 90
-};
+// Remove any previous margin declarations and define it once
+let margin;
+let svg, width, height;
+
+document.addEventListener('DOMContentLoaded', function () {
+    margin = {
+        top: 80,
+        right: 120,
+        bottom: 100,
+        left: 100
+    };
+
+    // Initialize the visualization based on the current page
+    initializeVisualization();
+});
+
+function initializeVisualization() {
+    const containerWidth = Math.min(1200, window.innerWidth - 40);
+    const containerHeight = Math.min(700, window.innerHeight * 0.7);
+
+    width = containerWidth - margin.left - margin.right;
+    height = containerHeight - margin.top - margin.bottom;
+
+    // Clear any existing SVG
+    d3.select(".chart-container svg").remove();
+
+    // Create new SVG
+    svg = d3.select(".chart-container")
+        .append("svg")
+        .attr("width", containerWidth)
+        .attr("height", containerHeight)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Load data
+    loadData();
+}
+
+function loadData() {
+    const baseUrl = getBaseUrl();
+    const dataPath = `${baseUrl}/data/vgsales.csv`;
+    console.log("Attempting to load data from:", dataPath);
+
+    d3.csv(dataPath)
+        .then(data => {
+            if (!data || data.length === 0) {
+                throw new Error("No data loaded");
+            }
+
+            console.log("Data loaded successfully:", data.length, "rows");
+
+            // Process data
+            data.forEach(d => {
+                d.Global_Sales = +d.Global_Sales || 0;
+                d.NA_Sales = +d.NA_Sales || 0;
+                d.EU_Sales = +d.EU_Sales || 0;
+                d.JP_Sales = +d.JP_Sales || 0;
+                d.Other_Sales = +d.Other_Sales || 0;
+                d.Year = (d.Year === "N/A" || d.Year === "") ? null : +d.Year;
+            });
+
+            // Determine which visualization to create
+            const path = window.location.pathname;
+            console.log("Current path:", path);
+
+            if (path.includes('publishers')) {
+                createPublisherChart(data);
+            } else if (path.includes('genres')) {
+                createGenreChart(data);
+            } else if (path.includes('timeline')) {
+                createTimelineChart(data);
+            }
+        })
+        .catch(error => {
+            console.error("Error loading the data:", error);
+            showError(error);
+        });
+}
 
 /**
  * VISUALIZATION 1: Publisher Analysis Bar Chart
@@ -31,47 +102,12 @@ const margin = {
  * - Accessibility: Clear labels and contrast
  */
 function createPublisherChart(data) {
-    const { svg, width, height } = createResponsiveChart("#visualization-1");
-
-    if (!svg || !width || !height) {
-        console.error("Failed to create chart container");
+    if (!svg) {
+        console.error("SVG not initialized");
         return;
     }
 
-    // Add gradient definitions for bars
-    const gradient = svg.append("defs")
-        .append("linearGradient")
-        .attr("id", "bar-gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "0%")
-        .attr("y2", "100%");
-
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#FF4444")
-        .attr("stop-opacity", 0.8);
-
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.8);
-
-    // Add chart title with animation
-    svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", width / 2)
-        .attr("y", -margin.top / 2)
-        .attr("text-anchor", "middle")
-        .text("Global Sales by Publisher")
-        .style("font-size", "28px")
-        .style("font-weight", "bold")
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
-
-    // Process data for publishers
+    // Process publisher data
     const publisherData = d3.rollup(data,
         v => ({
             sales: d3.sum(v, d => d.Global_Sales),
@@ -79,16 +115,10 @@ function createPublisherChart(data) {
             topGame: v.reduce((a, b) => a.Global_Sales > b.Global_Sales ? a : b),
             naSales: d3.sum(v, d => d.NA_Sales),
             euSales: d3.sum(v, d => d.EU_Sales),
-            jpSales: d3.sum(v, d => d.JP_Sales),
-            bestGenre: Array.from(d3.rollup(v, w => d3.sum(w, x => x.Global_Sales), d => d.Genre))
-                .sort((a, b) => b[1] - a[1])[0][0],
-            yearlyData: Array.from(d3.rollup(v, w => d3.sum(w, x => x.Global_Sales), d => d.Year))
-                .sort((a, b) => b[1] - a[1])
+            jpSales: d3.sum(v, d => d.JP_Sales)
         }),
         d => d.Publisher
     );
-
-    const totalSales = d3.sum(data, d => d.Global_Sales);
 
     const sortedData = Array.from(publisherData, ([key, value]) => ({
         publisher: key,
@@ -97,11 +127,10 @@ function createPublisherChart(data) {
         topGame: value.topGame.Name,
         naSales: value.naSales,
         euSales: value.euSales,
-        jpSales: value.jpSales,
-        bestGenre: value.bestGenre,
-        avgSales: value.sales / value.gameCount,
-        peakYear: value.yearlyData[0][0]
-    })).sort((a, b) => b.sales - a.sales).slice(0, 15);
+        jpSales: value.jpSales
+    }))
+        .sort((a, b) => b.sales - a.sales)
+        .slice(0, 15);
 
     // Create scales
     const x = d3.scaleBand()
@@ -113,47 +142,18 @@ function createPublisherChart(data) {
         .range([height, 0])
         .domain([0, d3.max(sortedData, d => d.sales) * 1.1]);
 
-    // Add animated axes
+    // Add axes
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x))
         .selectAll("text")
         .attr("transform", "rotate(-45)")
-        .style("text-anchor", "end")
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .style("text-anchor", "end");
 
     svg.append("g")
-        .call(d3.axisLeft(y))
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .call(d3.axisLeft(y));
 
-    // Add axes labels with animation
-    const labels = [
-        { text: "Publishers", x: width / 2, y: height + 60 },
-        { text: "Global Sales (millions)", x: -height / 2, y: -60, rotate: -90 }
-    ];
-
-    labels.forEach(label => {
-        svg.append("text")
-            .attr("class", "axis-label")
-            .attr("x", label.x)
-            .attr("y", label.y)
-            .attr("text-anchor", "middle")
-            .attr("transform", label.rotate ? `rotate(${label.rotate})` : null)
-            .text(label.text)
-            .style("font-size", "14px")
-            .style("opacity", 0)
-            .transition()
-            .duration(1000)
-            .style("opacity", 1);
-    });
-
-    // Enhanced bars with animations and interactions
+    // Add bars
     const bars = svg.selectAll(".bar")
         .data(sortedData)
         .enter()
@@ -161,134 +161,33 @@ function createPublisherChart(data) {
         .attr("class", "bar")
         .attr("x", d => x(d.publisher))
         .attr("width", x.bandwidth())
-        .attr("y", height)
-        .attr("height", 0)
-        .attr("fill", "url(#bar-gradient)")
-        .attr("rx", 6)
-        .attr("ry", 6)
-        .style("filter", "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))");
-
-    // Bar animation
-    bars.transition()
-        .duration(1200)
-        .delay((d, i) => i * 100)
-        .ease(d3.easeElastic.amplitude(0.5))
         .attr("y", d => y(d.sales))
-        .attr("height", d => height - y(d.sales));
+        .attr("height", d => height - y(d.sales))
+        .attr("fill", "#8B0000");
 
-    // Enhanced tooltip
+    // Add tooltips
     const tooltip = d3.select("body").append("div")
-        .attr("class", "publisher-tooltip")
-        .style("opacity", 0)
-        .style("position", "absolute")
-        .style("pointer-events", "none");
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
-    // Bar interactions
     bars.on("mouseover", function (event, d) {
-        const bar = d3.select(this);
-
-        // Enhance bar appearance
-        bar.transition()
-            .duration(200)
-            .attr("fill", "url(#bar-gradient)")
-            .style("filter", "drop-shadow(0 6px 8px rgba(0, 0, 0, 0.2))")
-            .attr("transform", "scale(1, 1.02)");
-
-        // Calculate tooltip position relative to the bar
-        const barX = parseFloat(bar.attr("x"));
-        const barY = parseFloat(bar.attr("y"));
-        const tooltipX = x(d.publisher) + margin.left + x.bandwidth() / 2;
-        const tooltipY = y(d.sales) + margin.top - 10;
-
-        // Show tooltip with animation
         tooltip.transition()
             .duration(200)
-            .style("opacity", 0.98);
-
+            .style("opacity", .9);
         tooltip.html(`
-            <div class="tooltip-header">
-                <strong>${d.publisher}</strong>
-                <span class="market-share">${(d.sales / totalSales * 100).toFixed(1)}% Market Share</span>
-            </div>
-            <div class="tooltip-content">
-                <div class="tooltip-section">
-                    <div class="stat-row">
-                        <span class="stat-label">Global Sales:</span>
-                        <span class="stat-value">${d.sales.toFixed(1)}M</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Games Released:</span>
-                        <span class="stat-value">${d.gameCount}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Avg Sales/Game:</span>
-                        <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
-                    </div>
-                </div>
-                <div class="tooltip-section">
-                    <div class="stat-row">
-                        <span class="stat-label">Best Genre:</span>
-                        <span class="stat-value">${d.bestGenre}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Peak Year:</span>
-                        <span class="stat-value">${d.peakYear}</span>
-                    </div>
-                </div>
-                <div class="tooltip-section regional-sales">
-                    <div class="region">
-                        <span class="region-label">NA</span>
-                        <div class="region-bar" style="width: ${(d.naSales / d.sales * 100)}%"></div>
-                        <span class="region-value">${d.naSales.toFixed(1)}M</span>
-                    </div>
-                    <div class="region">
-                        <span class="region-label">EU</span>
-                        <div class="region-bar" style="width: ${(d.euSales / d.sales * 100)}%"></div>
-                        <span class="region-value">${d.euSales.toFixed(1)}M</span>
-                    </div>
-                    <div class="region">
-                        <span class="region-label">JP</span>
-                        <div class="region-bar" style="width: ${(d.jpSales / d.sales * 100)}%"></div>
-                        <span class="region-value">${d.jpSales.toFixed(1)}M</span>
-                    </div>
-                </div>
-            </div>
+            <strong>${d.publisher}</strong><br/>
+            Global Sales: ${d.sales.toFixed(2)}M<br/>
+            Games: ${d.gameCount}<br/>
+            Top Game: ${d.topGame}
         `)
-            .style("left", `${tooltipX}px`)
-            .style("top", `${tooltipY}px`)
-            .style("transform", "translate(-50%, -100%)");
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
     })
         .on("mouseout", function () {
-            // Reset bar appearance
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .attr("fill", "url(#bar-gradient)")
-                .style("filter", "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))")
-                .attr("transform", "scale(1, 1)");
-
-            // Hide tooltip
             tooltip.transition()
-                .duration(200)
+                .duration(500)
                 .style("opacity", 0);
         });
-
-    // Add value labels on top of bars with animation
-    svg.selectAll(".value-label")
-        .data(sortedData)
-        .enter()
-        .append("text")
-        .attr("class", "value-label")
-        .attr("x", d => x(d.publisher) + x.bandwidth() / 2)
-        .attr("y", d => y(d.sales) - 5)
-        .attr("text-anchor", "middle")
-        .text(d => d.sales.toFixed(1))
-        .style("font-size", "12px")
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .delay((d, i) => i * 100 + 500)
-        .style("opacity", 1);
 }
 
 /**
@@ -864,56 +763,18 @@ function getBaseUrl() {
         : '';
 }
 
-/**
- * Error Handling:
- * - Graceful fallbacks
- * - User-friendly error messages
- * - Console logging for debugging
- */
-const dataPath = `${getBaseUrl()}/data/vgsales.csv`;
+function showError(error) {
+    d3.selectAll('.visualization').html(`
+        <div class="error-message">
+            <h3>Error Loading Visualization</h3>
+            <p>Failed to load data. Please ensure the data file exists and is accessible.</p>
+            <p>Error details: ${error.message}</p>
+        </div>
+    `);
+}
 
-d3.csv(dataPath)
-    .then(data => {
-        if (!data || data.length === 0) {
-            throw new Error("No data loaded");
-        }
-
-        console.log("Data loaded successfully:", data.length, "rows");
-
-        // Convert sales columns to numbers
-        data.forEach(d => {
-            d.Global_Sales = +d.Global_Sales || 0;
-            d.NA_Sales = +d.NA_Sales || 0;
-            d.EU_Sales = +d.EU_Sales || 0;
-            d.JP_Sales = +d.JP_Sales || 0;
-            d.Other_Sales = +d.Other_Sales || 0;
-            d.Year = (d.Year === "N/A" || d.Year === "") ? null : +d.Year;
-        });
-
-        const path = window.location.pathname;
-        console.log("Current URL:", window.location.href);
-        console.log("Current path:", path);
-
-        if (path.includes('publishers')) {
-            createPublisherChart(data);
-        } else if (path.includes('genres')) {
-            createGenreChart(data);
-        } else if (path.includes('timeline')) {
-            createTimelineChart(data);
-        }
-    })
-    .catch(error => {
-        console.error("Error loading the data:", error);
-        document.querySelectorAll('.visualization').forEach(vizElement => {
-            vizElement.innerHTML = `
-                <div class="error-message">
-                    <h3>Error Loading Visualization</h3>
-                    <p>Failed to load data. Please ensure the data file exists and is accessible.</p>
-                    <p>Error details: ${error.message}</p>
-                </div>
-            `;
-        });
-    });
+// Add window resize handler
+window.addEventListener('resize', initializeVisualization);
 
 // Add CSS for visualization containers
 const style = document.createElement('style');
