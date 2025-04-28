@@ -23,6 +23,84 @@
         border: '#8B0000'
     };
 
+    // Data loading configuration
+    const DATA_CONFIG = {
+        local: '/data/vgsales.csv',
+        production: '/Final-Project-370/data/vgsales.csv'
+    };
+
+    function getDataPath() {
+        // Check if we're on GitHub Pages
+        if (window.location.hostname.includes('github.io')) {
+            return DATA_CONFIG.production;
+        }
+        return DATA_CONFIG.local;
+    }
+
+    async function loadData() {
+        const dataPath = getDataPath();
+        console.log('Attempting to load data from:', dataPath);
+
+        try {
+            const data = await d3.csv(dataPath);
+            if (!data || data.length === 0) {
+                throw new Error('No data loaded');
+            }
+            console.log('Successfully loaded', data.length, 'records');
+            return data;
+        } catch (error) {
+            console.error('Error loading data:', error);
+            // Display error to user
+            const mainElement = document.querySelector('main');
+            if (mainElement) {
+                mainElement.innerHTML = `
+                    <div class="error-message" style="color: #8B0000; padding: 20px; text-align: center;">
+                        <h2>Error Loading Data</h2>
+                        <p>Unable to load the dataset. Please try refreshing the page.</p>
+                        <p>Technical details: ${error.message}</p>
+                    </div>
+                `;
+            }
+            throw error;
+        }
+    }
+
+    async function initializeVisualization() {
+        try {
+            const data = await loadData();
+
+            // Get the container dimensions
+            const container = document.getElementById('visualization-container');
+            if (!container) {
+                throw new Error('Visualization container not found');
+            }
+
+            // Clear any existing content
+            container.innerHTML = '';
+
+            // Set up SVG
+            width = container.clientWidth - margin.left - margin.right;
+            height = 600 - margin.top - margin.bottom;
+
+            svg = d3.select('#visualization-container')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Determine which chart to create based on the current page
+            const currentPage = window.location.pathname;
+            if (currentPage.includes('publishers.html')) {
+                createPublisherChart(data);
+            } else if (currentPage.includes('timeline.html')) {
+                createTimelineChart(data);
+            }
+        } catch (error) {
+            console.error('Failed to initialize visualization:', error);
+        }
+    }
+
     // Declare variables in local scope
     const margin = {
         top: 80,
