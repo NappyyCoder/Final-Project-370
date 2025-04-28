@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="./static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="./static/js/charts.js" defer></script>
 </head>
 
 <body>
@@ -27,40 +26,27 @@
     </header>
 
     <main>
-        <section class="content-section">
-            <h2>Understanding Publisher Market Dominance</h2>
-            <p>This visualization showcases the top video game publishers based on global sales volume. The data reveals
-                interesting patterns in market dominance and publisher success rates.</p>
-
-            <div class="key-insights">
-                <h3>Key Insights</h3>
-                <ul>
-                    <li>Market concentration among top publishers</li>
-                    <li>Regional publishing powerhouses</li>
-                    <li>Evolution of publisher market shares</li>
-                </ul>
-            </div>
-
-            <div id="visualization-1" class="visualization">
-                <div class="chart-container"></div>
-            </div>
-
-            <div class="analysis-notes">
-                <h3>Analysis Notes</h3>
-                <p>The bar chart above represents the total global sales volume for each publisher. The height of each
-                    bar corresponds to the cumulative sales in millions of units. Hover over each bar to see detailed
-                    statistics.</p>
-                <p>Notable observations include:</p>
-                <ul>
-                    <li>Nintendo's consistent market leadership</li>
-                    <li>The impact of major franchise titles on publisher rankings</li>
-                    <li>The relationship between publisher longevity and total sales</li>
-                </ul>
-            </div>
-        </section>
+        <div class="content-section">
+            <h2>Publisher Sales Analysis</h2>
+            <!-- Ensure this div exists and is properly placed -->
+            <div id="visualization-container" class="chart-container"></div>
+        </div>
     </main>
 
+    <!-- Move scripts to end of body -->
     <script src="./static/js/charts.js"></script>
+    <script>
+        // Wait for both DOM and charts.js to be ready
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(() => {
+                if (window.VideoGameViz && window.VideoGameViz.initialize) {
+                    window.VideoGameViz.initialize();
+                } else {
+                    console.error('VideoGameViz not initialized properly');
+                }
+            }, 100);
+        });
+    </script>
 </body>
 
 </html>

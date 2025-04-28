@@ -1,86 +1,125 @@
 :root {
+    /* Enhanced color palette */
     --primary-color: #8B0000;
-    /* Dark Red */
+    --primary-light: #B22222;
+    --primary-dark: #660000;
     --accent-color: #FF3333;
-    /* Bright Red */
+    --accent-light: #FF6666;
     --text-color: #2c2c2c;
+    --text-light: #666666;
     --background-color: #fff5f5;
-    /* Light Red Tint */
     --card-background: #ffffff;
-    --shadow: 0 4px 6px rgba(139, 0, 0, 0.1);
-    --hover-color: #CC0000;
-    /* Medium Red */
-    --gradient-start: #8B0000;
-    /* Dark Red */
-    --gradient-end: #FF3333;
-    /* Bright Red */
+
+    /* Enhanced shadows */
+    --shadow-sm: 0 2px 4px rgba(139, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(139, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(139, 0, 0, 0.1);
+    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    --gradient-accent: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+    --gradient-light: linear-gradient(135deg, #ffffff, var(--background-color));
+
+    /* Transitions */
+    --transition-fast: 150ms ease-in-out;
+    --transition-normal: 300ms ease-in-out;
+    --transition-slow: 500ms ease-in-out;
 }
 
-* {
+/* Modern Reset */
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+/* Enhanced Body Styles */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--background-color);
     overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Container for better responsiveness */
-.container {
-    width: 100%;
-    max-width: 1400px;
-    /* Increased from 1200px */
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
+/* Enhanced Header */
 header {
-    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    background: var(--gradient-primary);
     color: white;
-    padding: clamp(1rem, 5vw, 2rem);
+    padding: clamp(2rem, 5vw, 3rem);
     text-align: center;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    z-index: 10;
 }
 
 header h1 {
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
-    margin-bottom: 1rem;
-    font-weight: 700;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced Navigation */
+nav {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1rem;
+    margin: 1rem auto;
+    max-width: 900px;
 }
 
 nav ul {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: clamp(0.5rem, 2vw, 2rem);
+    gap: clamp(0.8rem, 2vw, 1.5rem);
     list-style: none;
-    margin-top: 1.5rem;
-    padding: 0 1rem;
 }
 
 nav a {
     color: white;
     text-decoration: none;
-    padding: 0.5rem 1.5rem;
+    padding: 0.8rem 1.5rem;
     border-radius: 25px;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
     font-weight: 500;
     background: rgba(255, 255, 255, 0.1);
     display: inline-block;
-    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+nav a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: var(--transition-normal);
+}
+
+nav a:hover::before {
+    transform: translateX(100%);
 }
 
 nav a:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    color: #FFE5E5;
-    /* Light Red */
+    box-shadow: var(--shadow-md);
 }
 
 main {
@@ -91,26 +130,20 @@ main {
 }
 
 .visualization {
-    background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    box-shadow:
-        20px 20px 60px #d9d9d9,
-        -20px -20px 60px #ffffff;
-    transition: all 0.3s ease;
-    border-radius: 15px;
-    padding: clamp(2rem, 5vw, 4rem);
-    /* Increased padding */
-    margin: 3rem 0;
-    /* Increased margin */
-    overflow: hidden;
+    background: var(--gradient-light);
+    border-radius: 16px;
+    padding: clamp(2rem, 5vw, 3rem);
+    margin: 2rem 0;
+    box-shadow: var(--shadow-lg);
     border: 1px solid rgba(139, 0, 0, 0.1);
-    /* Subtle red border */
+    transition: var(--transition-normal);
+    position: relative;
+    overflow: hidden;
 }
 
 .visualization:hover {
     transform: translateY(-5px);
-    box-shadow:
-        25px 25px 65px #d1d1d1,
-        -25px -25px 65px #ffffff;
+    box-shadow: var(--shadow-lg), 0 10px 25px rgba(139, 0, 0, 0.2);
 }
 
 .visualization h2 {
@@ -164,16 +197,84 @@ main {
     box-shadow: 0 0 0 2px rgba(255, 51, 51, 0.2);
 }
 
+/**
+ * VISUALIZATION STYLING
+ * 
+ * Design Principles:
+ * 1. Consistent visual hierarchy
+ * 2. Accessible color choices
+ * 3. Responsive layouts
+ * 4. Clear typography
+ */
+
+/* Chart container styling for responsiveness */
 .chart-container {
     width: 100%;
-    min-height: 600px;
-    /* Set minimum height */
-    overflow: visible;
-    /* Changed from auto to visible */
-    background: linear-gradient(to bottom right, #fff, #fff5f5);
+    height: 600px;
+    min-height: 400px;
+    position: relative;
+    background: white;
     border-radius: 8px;
-    padding: 1.5rem;
-    margin: 1rem 0;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+#visualization-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.error-message {
+    padding: 20px;
+    color: #8B0000;
+    text-align: center;
+    background: rgba(139, 0, 0, 0.1);
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+/* Accessibility-focused styles */
+.axis-label {
+    font-size: 14px;
+    font-weight: 500;
+    /* High contrast for readability */
+    fill: #333;
+}
+
+/* Interactive element styling */
+.dot {
+    fill: #8B0000;
+    stroke: white;
+    stroke-width: 2px;
+    transition: fill 0.2s ease, r 0.2s ease;
+    pointer-events: all;
+    cursor: pointer;
+}
+
+/* Animation definitions */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design breakpoints */
+@media (max-width: 768px) {
+    .visualization {
+        padding: 1rem;
+    }
+
+    .tooltip {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
 }
 
 /* Chart Responsive Styles */
@@ -189,28 +290,78 @@ svg {
 
 .tooltip {
     position: absolute;
-    background: rgba(139, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     color: white;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 1.5rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
     pointer-events: none;
-    max-width: 250px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
     transition: all 0.2s ease;
 }
 
 .tooltip strong {
-    color: #FFB3B3;
+    color: var(--accent-light);
     display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    font-size: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    padding-bottom: 4px;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.tooltip hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 0.8rem 0;
+}
+
+.tooltip-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+}
+
+.tooltip-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: white;
+}
+
+.tooltip-footer {
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+.tooltip-hint {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 768px) {
+    .tooltip {
+        max-width: 300px;
+        padding: 1rem;
+    }
+
+    .tooltip-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
 }
 
 /* Hover line styles for timeline chart */
@@ -229,29 +380,30 @@ svg {
 .dot {
     fill: #8B0000;
     stroke: white;
-    stroke-width: 2;
-    transition: all 0.3s ease;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+    stroke-width: 2px;
+    transition: fill 0.2s ease, r 0.2s ease;
+    pointer-events: all;
+    cursor: pointer;
 }
 
 .dot:hover {
-    fill: #FF3333;
-    cursor: pointer;
+    fill: var(--accent-color);
+    r: 8;
 }
 
 /* Line chart specific styles */
 .line {
-    stroke: #8B0000;
+    stroke: var(--primary-color);
     stroke-width: 3;
     fill: none;
-    filter: drop-shadow(0 2px 4px rgba(139, 0, 0, 0.2));
+    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
 }
 
 /* Area fill beneath the line */
 .area {
     fill: url(#line-gradient);
-    opacity: 0.3;
-    transition: opacity 0.3s ease;
+    opacity: 0.2;
+    transition: var(--transition-normal);
 }
 
 /* Chart title styles */
@@ -265,6 +417,70 @@ svg {
 .axis-label {
     font-size: 14px;
     fill: #666;
+    font-weight: 500;
+}
+
+.value-label {
+    font-size: 12px;
+    fill: #666;
+    font-weight: 500;
+}
+
+.tooltip {
+    position: fixed;
+    /* Change from absolute to fixed */
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.tooltip strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #FFB3B3;
+}
+
+.tooltip span {
+    display: block;
+    margin-top: 5px;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.vertical-guide {
+    stroke: rgba(139, 0, 0, 0.2);
+    stroke-width: 1px;
+    stroke-dasharray: 3, 3;
+    pointer-events: none;
+}
+
+.line {
+    stroke: #8B0000;
+    stroke-width: 3;
+    fill: none;
+    filter: drop-shadow(0 2px 4px rgba(139, 0, 0, 0.2));
+}
+
+.dot {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Animation keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-container {
+    animation: fadeInUp 0.8s ease-out;
 }
 
 /* Responsive design */
@@ -519,4 +735,373 @@ svg {
     margin-top: 2rem;
     padding: 1.5rem;
     border-top: 2px solid rgba(139, 0, 0, 0.1);
+}
+
+/* Genre chart specific styles */
+.genre-tooltip {
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 300px;
+    z-index: 1000;
+}
+
+.genre-tooltip .tooltip-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.genre-tooltip .tooltip-header strong {
+    color: #FF4444;
+    font-size: 1.1rem;
+    display: block;
+}
+
+.genre-tooltip .market-share {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.genre-tooltip .tooltip-section {
+    margin: 0.5rem 0;
+}
+
+.genre-tooltip .stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.25rem 0;
+}
+
+.genre-tooltip .stat-label {
+    color: #aaa;
+}
+
+.genre-tooltip .stat-value {
+    font-weight: 500;
+}
+
+.chart-container {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    position: relative;
+}
+
+.genre-point {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.genre-label {
+    pointer-events: none;
+    text-shadow: 1px 1px 2px white, -1px -1px 2px white;
+}
+
+.grid line {
+    stroke: #e0e0e0;
+    stroke-opacity: 0.7;
+}
+
+.axis-label {
+    fill: #666;
+    font-size: 14px;
+}
+
+.trend-line {
+    pointer-events: none;
+}
+
+circle {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+circle:hover {
+    filter: drop-shadow(0 0 5px rgba(139, 0, 0, 0.5));
+}
+
+/* Timeline Visualization Styles */
+
+/* Main line styling for the trend line */
+.line {
+    fill: none;
+    stroke: #8B0000;
+    /* Dark red color */
+    stroke-width: 3;
+    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
+    /* Adds depth */
+}
+
+/* Data point styling */
+.dot {
+    fill: #8B0000;
+    /* Matches line color */
+    stroke: white;
+    /* White border for contrast */
+    stroke-width: 2px;
+    cursor: pointer;
+    /* Shows interactivity */
+    transition: fill 0.2s ease, r 0.2s ease;
+    /* Smooth transitions */
+}
+
+/* Hover state for data points */
+.dot:hover {
+    fill: var(--accent-color);
+    r: 8;
+    /* Increases size on hover */
+}
+
+/* Tooltip container styling */
+.tooltip {
+    position: fixed;
+    /* Follows cursor */
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #8B0000;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 280px;
+    z-index: 1000;
+    /* Ensures tooltip stays on top */
+}
+
+/* Tooltip header styling */
+.tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.tooltip-header strong {
+    font-size: 1.2em;
+    color: #8B0000;
+}
+
+/* Tooltip content grid layout */
+.tooltip-grid {
+    display: grid;
+    gap: 8px;
+}
+
+/* Tooltip statistics styling */
+.tooltip-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: #333;
+}
+
+/* Axis styling */
+.axis-label {
+    font-size: 12px;
+    fill: #666;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+    .tooltip {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}
+
+/* Timeline specific styles */
+.line {
+    fill: none;
+    stroke: #8B0000;
+    stroke-width: 3;
+    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
+}
+
+.area {
+    fill: url(#area-gradient);
+    transition: opacity 0.3s ease;
+}
+
+.guide-line {
+    stroke: rgba(139, 0, 0, 0.3);
+    stroke-width: 1px;
+    stroke-dasharray: 4, 4;
+    pointer-events: none;
+}
+
+.tooltip {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #8B0000;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 280px;
+    z-index: 1000;
+}
+
+.tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.tooltip-header strong {
+    font-size: 1.2em;
+    color: #8B0000;
+}
+
+.tooltip-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.tooltip-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: #333;
+}
+
+.growth {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.growth.positive {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.growth.negative {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* Publisher Chart Specific Styles */
+.bar {
+    transition: all 0.3s ease;
+}
+
+.publisher-tooltip {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid #8B0000;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 320px;
+    font-size: 14px;
+}
+
+.tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(139, 0, 0, 0.2);
+}
+
+.tooltip-header strong {
+    font-size: 18px;
+    color: #8B0000;
+}
+
+.market-share {
+    background: rgba(139, 0, 0, 0.1);
+    color: #8B0000;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.tooltip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tooltip-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    color: #666;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: #333;
+}
+
+.regional-sales {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.region {
+    display: grid;
+    grid-template-columns: 30px 1fr 50px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.region-label {
+    font-weight: 500;
+    color: #666;
+}
+
+.region-bar {
+    height: 6px;
+    background: #8B0000;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.region-value {
+    font-size: 13px;
+    color: #333;
+    text-align: right;
+}
+
+.axis-label {
+    font-weight: 500;
+    fill: #666;
+}
+
+.chart-title {
+    fill: #333;
 }

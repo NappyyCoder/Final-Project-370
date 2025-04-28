@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="./static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="./static/js/charts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.VideoGameViz && window.VideoGameViz.initialize) {
+                window.VideoGameViz.initialize();
+            }
+        });
+    </script>
 </head>
 
 <body>
@@ -26,39 +34,11 @@
     </header>
 
     <main>
-        <section class="content-section">
-            <h2>Industry Evolution Over Time</h2>
-            <p>This timeline visualization shows the evolution of video game sales across different years, revealing
-                industry growth patterns and market trends.</p>
-
-            <div class="key-insights">
-                <h3>Key Insights</h3>
-                <ul>
-                    <li>Industry growth patterns</li>
-                    <li>Peak sales periods</li>
-                    <li>Market maturity analysis</li>
-                </ul>
-            </div>
-
-            <div id="visualization-3" class="visualization">
-                <div class="chart-container"></div>
-            </div>
-
-            <div class="analysis-notes">
-                <h3>Analysis Notes</h3>
-                <p>The timeline chart tracks global video game sales over the years. The trend line shows the industry's
-                    growth trajectory, while the shaded area represents the volume of sales.</p>
-                <p>Significant observations include:</p>
-                <ul>
-                    <li>Impact of console generation releases</li>
-                    <li>Market expansion periods</li>
-                    <li>Correlation with technological advances</li>
-                </ul>
-            </div>
-        </section>
+        <div class="visualization">
+            <h2>Sales Timeline Analysis</h2>
+            <div id="visualization-container"></div>
+        </div>
     </main>
-
-    <script src="./static/js/charts.js"></script>
 </body>
 
 </html>
