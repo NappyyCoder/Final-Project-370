@@ -1,125 +1,86 @@
 :root {
-    /* Enhanced color palette */
     --primary-color: #8B0000;
-    --primary-light: #B22222;
-    --primary-dark: #660000;
+    /* Dark Red */
     --accent-color: #FF3333;
-    --accent-light: #FF6666;
+    /* Bright Red */
     --text-color: #2c2c2c;
-    --text-light: #666666;
     --background-color: #fff5f5;
+    /* Light Red Tint */
     --card-background: #ffffff;
-
-    /* Enhanced shadows */
-    --shadow-sm: 0 2px 4px rgba(139, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(139, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px rgba(139, 0, 0, 0.1);
-    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    --gradient-accent: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-    --gradient-light: linear-gradient(135deg, #ffffff, var(--background-color));
-
-    /* Transitions */
-    --transition-fast: 150ms ease-in-out;
-    --transition-normal: 300ms ease-in-out;
-    --transition-slow: 500ms ease-in-out;
+    --shadow: 0 4px 6px rgba(139, 0, 0, 0.1);
+    --hover-color: #CC0000;
+    /* Medium Red */
+    --gradient-start: #8B0000;
+    /* Dark Red */
+    --gradient-end: #FF3333;
+    /* Bright Red */
 }
 
-/* Modern Reset */
-*,
-*::before,
-*::after {
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
 }
 
-/* Enhanced Body Styles */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--background-color);
     overflow-x: hidden;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
 }
 
-/* Enhanced Header */
+/* Container for better responsiveness */
+.container {
+    width: 100%;
+    max-width: 1400px;
+    /* Increased from 1200px */
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 header {
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
     color: white;
-    padding: clamp(2rem, 5vw, 3rem);
+    padding: clamp(1rem, 5vw, 2rem);
     text-align: center;
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    z-index: 10;
+    box-shadow: var(--shadow);
 }
 
 header h1 {
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    margin-bottom: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* Enhanced Navigation */
-nav {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 1rem;
-    margin: 1rem auto;
-    max-width: 900px;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    margin-bottom: 1rem;
+    font-weight: 700;
 }
 
 nav ul {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: clamp(0.8rem, 2vw, 1.5rem);
+    gap: clamp(0.5rem, 2vw, 2rem);
     list-style: none;
+    margin-top: 1.5rem;
+    padding: 0 1rem;
 }
 
 nav a {
     color: white;
     text-decoration: none;
-    padding: 0.8rem 1.5rem;
+    padding: 0.5rem 1.5rem;
     border-radius: 25px;
-    transition: var(--transition-normal);
+    transition: all 0.3s ease;
     font-weight: 500;
     background: rgba(255, 255, 255, 0.1);
     display: inline-block;
-    position: relative;
-    overflow: hidden;
-}
-
-nav a::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transform: translateX(-100%);
-    transition: var(--transition-normal);
-}
-
-nav a:hover::before {
-    transform: translateX(100%);
+    white-space: nowrap;
 }
 
 nav a:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    color: #FFE5E5;
+    /* Light Red */
 }
 
 main {
@@ -130,20 +91,26 @@ main {
 }
 
 .visualization {
-    background: var(--gradient-light);
-    border-radius: 16px;
-    padding: clamp(2rem, 5vw, 3rem);
-    margin: 2rem 0;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid rgba(139, 0, 0, 0.1);
-    transition: var(--transition-normal);
-    position: relative;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    box-shadow:
+        20px 20px 60px #d9d9d9,
+        -20px -20px 60px #ffffff;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    padding: clamp(2rem, 5vw, 4rem);
+    /* Increased padding */
+    margin: 3rem 0;
+    /* Increased margin */
     overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.1);
+    /* Subtle red border */
 }
 
 .visualization:hover {
     transform: translateY(-5px);
-    box-shadow: var(--shadow-lg), 0 10px 25px rgba(139, 0, 0, 0.2);
+    box-shadow:
+        25px 25px 65px #d1d1d1,
+        -25px -25px 65px #ffffff;
 }
 
 .visualization h2 {
@@ -198,12 +165,15 @@ main {
 }
 
 .chart-container {
-    background: white;
-    border-radius: 12px;
+    width: 100%;
+    min-height: 600px;
+    /* Set minimum height */
+    overflow: visible;
+    /* Changed from auto to visible */
+    background: linear-gradient(to bottom right, #fff, #fff5f5);
+    border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: var(--shadow-inner);
-    min-height: 400px;
-    position: relative;
+    margin: 1rem 0;
 }
 
 /* Chart Responsive Styles */
@@ -219,78 +189,28 @@ svg {
 
 .tooltip {
     position: absolute;
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(139, 0, 0, 0.9);
     color: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
     pointer-events: none;
-    max-width: 400px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 250px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 1000;
     transition: all 0.2s ease;
 }
 
 .tooltip strong {
-    color: var(--accent-light);
+    color: #FFB3B3;
     display: block;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.tooltip hr {
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    margin: 0.8rem 0;
-}
-
-.tooltip-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.8rem;
-}
-
-.tooltip-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.stat-label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.8rem;
-}
-
-.stat-value {
-    font-weight: 500;
-    color: white;
-}
-
-.tooltip-footer {
-    margin-top: 1rem;
-    padding-top: 0.8rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    text-align: center;
-}
-
-.tooltip-hint {
-    font-style: italic;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-@media (max-width: 768px) {
-    .tooltip {
-        max-width: 300px;
-        padding: 1rem;
-    }
-
-    .tooltip-grid {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 4px;
 }
 
 /* Hover line styles for timeline chart */
@@ -309,31 +229,29 @@ svg {
 .dot {
     fill: #8B0000;
     stroke: white;
-    stroke-width: 2px;
-    transition: r 0.2s ease, fill 0.2s ease;
-    pointer-events: all;
-    cursor: pointer;
+    stroke-width: 2;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
 }
 
 .dot:hover {
-    fill: var(--accent-color);
-    transform: scale(1.2);
+    fill: #FF3333;
     cursor: pointer;
 }
 
 /* Line chart specific styles */
 .line {
-    stroke: var(--primary-color);
+    stroke: #8B0000;
     stroke-width: 3;
     fill: none;
-    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
+    filter: drop-shadow(0 2px 4px rgba(139, 0, 0, 0.2));
 }
 
 /* Area fill beneath the line */
 .area {
     fill: url(#line-gradient);
-    opacity: 0.2;
-    transition: var(--transition-normal);
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
 }
 
 /* Chart title styles */
@@ -347,70 +265,6 @@ svg {
 .axis-label {
     font-size: 14px;
     fill: #666;
-    font-weight: 500;
-}
-
-.value-label {
-    font-size: 12px;
-    fill: #666;
-    font-weight: 500;
-}
-
-.tooltip {
-    position: fixed;
-    /* Change from absolute to fixed */
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-}
-
-.tooltip strong {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 16px;
-    color: #FFB3B3;
-}
-
-.tooltip span {
-    display: block;
-    margin-top: 5px;
-    font-style: italic;
-    opacity: 0.8;
-}
-
-.vertical-guide {
-    stroke: rgba(139, 0, 0, 0.2);
-    stroke-width: 1px;
-    stroke-dasharray: 3, 3;
-    pointer-events: none;
-}
-
-.line {
-    stroke: #8B0000;
-    stroke-width: 3;
-    fill: none;
-    filter: drop-shadow(0 2px 4px rgba(139, 0, 0, 0.2));
-}
-
-.dot {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-/* Animation keyframes */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.chart-container {
-    animation: fadeInUp 0.8s ease-out;
 }
 
 /* Responsive design */
@@ -665,218 +519,4 @@ svg {
     margin-top: 2rem;
     padding: 1.5rem;
     border-top: 2px solid rgba(139, 0, 0, 0.1);
-}
-
-/* Genre chart specific styles */
-.genre-label {
-    pointer-events: none;
-    font-weight: 500;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8),
-        -1px -1px 2px rgba(255, 255, 255, 0.8),
-        1px -1px 2px rgba(255, 255, 255, 0.8),
-        -1px 1px 2px rgba(255, 255, 255, 0.8);
-}
-
-.trend-line {
-    pointer-events: none;
-}
-
-circle {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-circle:hover {
-    filter: drop-shadow(0 0 5px rgba(139, 0, 0, 0.5));
-}
-
-/* Timeline chart specific styles */
-.line {
-    fill: none;
-    stroke: #8B0000;
-    stroke-width: 3;
-    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
-}
-
-.area {
-    fill: url(#area-gradient);
-    transition: opacity 0.3s ease;
-}
-
-.dot {
-    fill: #8B0000;
-    stroke: white;
-    stroke-width: 2px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.guide-line {
-    stroke: rgba(139, 0, 0, 0.3);
-    stroke-width: 1px;
-    stroke-dasharray: 4, 4;
-    pointer-events: none;
-}
-
-.grid line {
-    stroke: #e0e0e0;
-    stroke-opacity: 0.7;
-    shape-rendering: crispEdges;
-}
-
-.grid path {
-    stroke-width: 0;
-}
-
-.axis-label {
-    font-size: 12px;
-    fill: #666;
-}
-
-.tooltip {
-    position: absolute;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #8B0000;
-    border-radius: 4px;
-    pointer-events: none;
-    font-size: 14px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
-}
-
-.tooltip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-}
-
-.growth {
-    font-size: 12px;
-    padding: 2px 6px;
-    border-radius: 3px;
-}
-
-.growth.positive {
-    color: #28a745;
-    background: rgba(40, 167, 69, 0.1);
-}
-
-.growth.negative {
-    color: #dc3545;
-    background: rgba(220, 53, 69, 0.1);
-}
-
-.tooltip hr {
-    border: none;
-    border-top: 1px solid rgba(139, 0, 0, 0.2);
-    margin: 5px 0;
-}
-
-.tooltip-grid {
-    display: grid;
-    gap: 8px;
-}
-
-.tooltip-stat {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.stat-label {
-    color: #666;
-    font-size: 12px;
-}
-
-.stat-value {
-    font-weight: 600;
-    color: #333;
-}
-
-.chart-title {
-    font-size: 24px;
-    font-weight: bold;
-    fill: #333;
-}
-
-/* Timeline specific styles */
-.line {
-    fill: none;
-    stroke: #8B0000;
-    stroke-width: 3;
-    filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
-}
-
-.area {
-    fill: url(#area-gradient);
-    transition: opacity 0.3s ease;
-}
-
-.guide-line {
-    stroke: rgba(139, 0, 0, 0.3);
-    stroke-width: 1px;
-    stroke-dasharray: 4, 4;
-    pointer-events: none;
-}
-
-.tooltip {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #8B0000;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 280px;
-    z-index: 1000;
-}
-
-.tooltip-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.tooltip-header strong {
-    font-size: 1.2em;
-    color: #8B0000;
-}
-
-.tooltip-grid {
-    display: grid;
-    gap: 8px;
-}
-
-.tooltip-stat {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.stat-label {
-    color: #666;
-    font-size: 0.9em;
-}
-
-.stat-value {
-    font-weight: 500;
-    color: #333;
-}
-
-.growth {
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    font-weight: 500;
-}
-
-.growth.positive {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-}
-
-.growth.negative {
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
 }
