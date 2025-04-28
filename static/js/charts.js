@@ -485,14 +485,14 @@ function createTimelineChart(data) {
         .style("opacity", 1)
         .attr("stroke-dashoffset", 0);
 
-    // Add interactive dots with animations
+    // Add interactive dots with proper positioning
     const dots = svg.selectAll(".dot")
         .data(timelineData)
         .enter()
         .append("circle")
         .attr("class", "dot")
         .attr("cx", d => x(d.year))
-        .attr("cy", d => y(0)) // Start at bottom for animation
+        .attr("cy", d => y(d.sales)) // Position directly on the line instead of y(0)
         .attr("r", 6)
         .attr("opacity", 0.7)
         .call(addLinePointTooltip, d => {
@@ -525,7 +525,7 @@ function createTimelineChart(data) {
                     <div class="tooltip-section">
                         <div class="stat-row">
                             <span class="stat-label">Top Game:</span>
-                            <span class="stat-value">${d.topGame}</span>
+                            <span class="stat-value">${d.topGame.Name}</span>
                         </div>
                         <div class="tooltip-context">
                             <span class="context-label">Market Context:</span>
