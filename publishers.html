@@ -8,14 +8,6 @@
     <link rel="stylesheet" href="./static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="./static/js/charts.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.VideoGameViz && window.VideoGameViz.initialize) {
-                window.VideoGameViz.initialize();
-            }
-        });
-    </script>
 </head>
 
 <body>
@@ -34,11 +26,27 @@
     </header>
 
     <main>
-        <div class="visualization">
+        <div class="content-section">
             <h2>Publisher Sales Analysis</h2>
-            <div id="visualization-container"></div>
+            <!-- Ensure this div exists and is properly placed -->
+            <div id="visualization-container" class="chart-container"></div>
         </div>
     </main>
+
+    <!-- Move scripts to end of body -->
+    <script src="./static/js/charts.js"></script>
+    <script>
+        // Wait for both DOM and charts.js to be ready
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(() => {
+                if (window.VideoGameViz && window.VideoGameViz.initialize) {
+                    window.VideoGameViz.initialize();
+                } else {
+                    console.error('VideoGameViz not initialized properly');
+                }
+            }, 100);
+        });
+    </script>
 </body>
 
 </html>

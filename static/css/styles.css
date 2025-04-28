@@ -210,10 +210,28 @@ main {
 /* Chart container styling for responsiveness */
 .chart-container {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    height: 600px;
+    min-height: 400px;
     position: relative;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+#visualization-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.error-message {
+    padding: 20px;
+    color: #8B0000;
+    text-align: center;
+    background: rgba(139, 0, 0, 0.1);
+    border-radius: 8px;
+    margin: 20px 0;
 }
 
 /* Accessibility-focused styles */
