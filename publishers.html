@@ -26,29 +26,78 @@
     </header>
 
     <main>
-        <div class="content-section">
-            <h2>Publisher Sales Analysis</h2>
-            <!-- Ensure this div exists and is properly placed -->
+        <section class="content-section">
+            <h2>Publisher Market Analysis</h2>
+            <p>This visualization examines the performance and market share of top video game publishers. The data
+                reveals key insights about market dominance, publishing strategies, and commercial success across
+                different companies.</p>
+
             <div class="visualization">
+                <div class="visualization-description">
+                    <h3>How to Read This Chart</h3>
+                    <p>This bar chart displays the top 15 video game publishers ranked by their global sales:</p>
+                    <ul>
+                        <li><strong>Vertical Axis (Y):</strong> Shows global sales in millions of units</li>
+                        <li><strong>Horizontal Axis (X):</strong> Lists publisher names</li>
+                        <li><strong>Bar Height:</strong> Represents total global sales volume</li>
+                        <li><strong>Interactive Features:</strong>
+                            <ul>
+                                <li>Hover over any bar to see detailed statistics</li>
+                                <li>Tooltip shows market share, total sales, number of games, and top-selling title</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
                 <div id="visualization-container" class="chart-container"></div>
+
+                <div class="visualization-insights">
+                    <h3>Key Insights</h3>
+                    <ul>
+                        <li><strong>Market Concentration:</strong> The top 5 publishers account for a significant
+                            portion of total industry sales</li>
+                        <li><strong>Portfolio Size:</strong> Larger publishers tend to have more diverse game catalogs
+                        </li>
+                        <li><strong>Success Patterns:</strong> Publishers with consistent hit titles show sustained
+                            market presence</li>
+                    </ul>
+                </div>
             </div>
-        </div>
+
+            <div class="analysis-section">
+                <h3>Market Leaders</h3>
+                <p>The data highlights several dominant publishers in the gaming industry:</p>
+                <ul>
+                    <li><strong>Nintendo:</strong> Consistently strong performance in both domestic (Japan) and global
+                        markets</li>
+                    <li><strong>Electronic Arts:</strong> Major presence in sports and action genres</li>
+                    <li><strong>Activision:</strong> Strong performance in action and FPS categories</li>
+                </ul>
+            </div>
+
+            <div class="analysis-section">
+                <h3>Publishing Strategies</h3>
+                <p>Different publishers show distinct strategies in the market:</p>
+                <ul>
+                    <li>Focus on specific genres or platforms</li>
+                    <li>Regional market specialization</li>
+                    <li>Balanced portfolio approach</li>
+                </ul>
+            </div>
+
+            <div class="analysis-section">
+                <h3>Historical Trends</h3>
+                <p>The data reveals interesting patterns in publisher performance over time:</p>
+                <ul>
+                    <li>Consolidation of major publishers</li>
+                    <li>Emergence of new successful publishers</li>
+                    <li>Impact of digital distribution</li>
+                </ul>
+            </div>
+        </section>
     </main>
 
-    <!-- Move scripts to end of body -->
     <script src="./static/js/charts.js"></script>
-    <script>
-        // Wait for both DOM and charts.js to be ready
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(() => {
-                if (window.VideoGameViz && window.VideoGameViz.initialize) {
-                    window.VideoGameViz.initialize();
-                } else {
-                    console.error('VideoGameViz not initialized properly');
-                }
-            }, 100);
-        });
-    </script>
 </body>
 
 </html>
