@@ -741,6 +741,57 @@ svg {
 }
 
 /* Genre chart specific styles */
+.genre-line {
+    fill: none;
+    stroke: #8B0000;
+    stroke-width: 2;
+    stroke-opacity: 0.3;
+    stroke-dasharray: 5, 5;
+}
+
+.genre-point {
+    fill: #8B0000;
+    stroke: white;
+    stroke-width: 2;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.genre-label {
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
+    text-shadow: 1px 1px 2px white, -1px -1px 2px white;
+}
+
+.grid line {
+    stroke: #e0e0e0;
+    stroke-opacity: 0.7;
+}
+
+.grid path {
+    stroke-width: 0;
+}
+
+/* Animation for genre points */
+.genre-point {
+    animation: fadeInScale 0.5s ease forwards;
+    animation-delay: calc(var(--index) * 100ms);
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    to {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+}
+
+/* Enhanced tooltip styles */
 .genre-tooltip {
     background: rgba(0, 0, 0, 0.95);
     color: white;
@@ -749,7 +800,7 @@ svg {
     font-size: 0.9rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     max-width: 300px;
-    z-index: 1000;
+    pointer-events: none;
 }
 
 .genre-tooltip .tooltip-header {
@@ -762,15 +813,6 @@ svg {
     color: #FF4444;
     font-size: 1.1rem;
     display: block;
-}
-
-.genre-tooltip .market-share {
-    font-size: 0.8rem;
-    color: #aaa;
-}
-
-.genre-tooltip .tooltip-section {
-    margin: 0.5rem 0;
 }
 
 .genre-tooltip .stat-row {
@@ -792,39 +834,6 @@ svg {
     height: 100%;
     min-height: 500px;
     position: relative;
-}
-
-.genre-point {
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.genre-label {
-    pointer-events: none;
-    text-shadow: 1px 1px 2px white, -1px -1px 2px white;
-}
-
-.grid line {
-    stroke: #e0e0e0;
-    stroke-opacity: 0.7;
-}
-
-.axis-label {
-    fill: #666;
-    font-size: 14px;
-}
-
-.trend-line {
-    pointer-events: none;
-}
-
-circle {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-circle:hover {
-    filter: drop-shadow(0 0 5px rgba(139, 0, 0, 0.5));
 }
 
 /* Timeline Visualization Styles */
