@@ -376,7 +376,16 @@ window.VideoGameViz = {};
         try {
             const container = document.getElementById('visualization-container');
             if (!container) {
-                throw new Error('Visualization container not found');
+                console.warn('Visualization container not found, creating one');
+                // Find the first .visualization or .chart-container element
+                const fallbackContainer = document.querySelector('.visualization') || document.querySelector('.chart-container');
+                if (!fallbackContainer) {
+                    throw new Error('No suitable visualization container found');
+                }
+                // Create the visualization container
+                const newContainer = document.createElement('div');
+                newContainer.id = 'visualization-container';
+                fallbackContainer.appendChild(newContainer);
             }
 
             // Clear any existing content
@@ -401,6 +410,8 @@ window.VideoGameViz = {};
                 createPublisherChart(data);
             } else if (currentPage.includes('timeline.html')) {
                 createTimelineChart(data);
+            } else if (currentPage.includes('genres.html')) {
+                createGenreChart(data);  // You'll need to implement this function
             }
         } catch (error) {
             console.error('Failed to initialize visualization:', error);
