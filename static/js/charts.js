@@ -82,16 +82,21 @@ window.VideoGameViz = {};
     // Expose the initialization function to the global namespace
     window.VideoGameViz.initialize = async function () {
         try {
-            const data = await loadData();
+            console.log('Initialization started...');
 
             // Get the container dimensions
             const container = document.getElementById('visualization-container');
             if (!container) {
+                console.error('Container not found: visualization-container');
                 throw new Error('Visualization container not found');
             }
 
+            console.log('Container found, dimensions:', container.clientWidth, container.clientHeight);
+
             // Clear any existing content
             container.innerHTML = '';
+
+            const data = await loadData();
 
             // Set up SVG
             width = container.clientWidth - margin.left - margin.right;
@@ -106,13 +111,27 @@ window.VideoGameViz = {};
 
             // Determine which chart to create based on the current page
             const currentPage = window.location.pathname;
+            console.log('Current page:', currentPage);
+
             if (currentPage.includes('publishers.html')) {
+                console.log('Creating publisher chart...');
                 createPublisherChart(data);
             } else if (currentPage.includes('timeline.html')) {
+                console.log('Creating timeline chart...');
                 createTimelineChart(data);
             }
         } catch (error) {
             console.error('Failed to initialize visualization:', error);
+            // Display error message in the container if possible
+            const container = document.getElementById('visualization-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-message" style="color: #8B0000; padding: 20px; text-align: center;">
+                        <h2>Error Initializing Visualization</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
         }
     };
 
@@ -282,6 +301,10 @@ window.VideoGameViz = {};
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', window.VideoGameViz.initialize);
 
-    // Add window resize handler
-    window.addEventListener('resize', window.VideoGameViz.initialize);
+    // Add window resize handler with debounce
+    let resizeTimeout;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(window.VideoGameViz.initialize, 250);
+    });
 })();
