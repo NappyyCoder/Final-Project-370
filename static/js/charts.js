@@ -197,12 +197,12 @@ window.VideoGameViz = {};
         // Clear any existing charts
         d3.select('#visualization-container').selectAll('*').remove();
 
-        // Set up dimensions with proper margins
-        const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+        // Set up dimensions with proper margins - increased height and adjusted margins
+        const margin = { top: 60, right: 80, bottom: 80, left: 80 };
         const width = container.clientWidth - margin.left - margin.right;
-        const height = 500 - margin.top - margin.bottom;
+        const height = 700 - margin.top - margin.bottom; // Increased height
 
-        // Create SVG container
+        // Create SVG container with increased size
         const svg = d3.select('#visualization-container')
             .append('svg')
             .attr('width', width + margin.left + margin.right)
@@ -210,22 +210,26 @@ window.VideoGameViz = {};
             .append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
-        // Process data by year and filter out incomplete/anomalous data
+        // Process data by year with enhanced filtering
         const yearData = Array.from(d3.rollup(data,
             v => ({
                 sales: d3.sum(v, d => +d.Global_Sales),
-                gameCount: v.length
+                gameCount: v.length,
+                topGame: v.sort((a, b) => b.Global_Sales - a.Global_Sales)[0].Name,
+                avgSales: d3.mean(v, d => +d.Global_Sales)
             }),
             d => d.Year
         ), ([year, values]) => ({
             year: +year,
             sales: values.sales,
-            gameCount: values.gameCount
+            gameCount: values.gameCount,
+            topGame: values.topGame,
+            avgSales: values.avgSales
         }))
-            .filter(d => !isNaN(d.year) && d.year >= 1980 && d.year <= 2016) // Adjust end year to 2016
+            .filter(d => !isNaN(d.year) && d.year >= 1980 && d.year <= 2016)
             .sort((a, b) => a.year - b.year);
 
-        // Create gradient for area
+        // Enhanced gradient for area
         const gradient = svg.append("defs")
             .append("linearGradient")
             .attr("id", "area-gradient")
@@ -236,50 +240,67 @@ window.VideoGameViz = {};
 
         gradient.append("stop")
             .attr("offset", "0%")
-            .attr("stop-color", CHART_COLORS.primary)
+            .attr("stop-color", "#8B0000")
             .attr("stop-opacity", 0.4);
 
         gradient.append("stop")
             .attr("offset", "100%")
-            .attr("stop-color", CHART_COLORS.primary)
+            .attr("stop-color", "#8B0000")
             .attr("stop-opacity", 0.1);
 
-        // Set up scales
+        // Set up scales with more padding for better visualization
         const x = d3.scaleLinear()
-            .domain(d3.extent(yearData, d => d.year))
+            .domain([d3.min(yearData, d => d.year) - 1, d3.max(yearData, d => d.year) + 1])
             .range([0, width]);
 
         const y = d3.scaleLinear()
-            .domain([0, d3.max(yearData, d => d.sales) * 1.1])
+            .domain([0, d3.max(yearData, d => d.sales) * 1.2])
             .range([height, 0]);
 
-        // Add gridlines
+        // Add enhanced gridlines
         svg.append('g')
             .attr('class', 'grid')
             .call(d3.axisLeft(y)
                 .tickSize(-width)
                 .tickFormat('')
-            );
+                .ticks(10)
+            )
+            .style('stroke-dasharray', '3,3')
+            .style('opacity', 0.3);
 
-        // Add axes
+        // Add vertical grid lines
         svg.append('g')
+            .attr('class', 'grid')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(x)
+                .tickSize(-height)
+                .tickFormat('')
+                .ticks(10)
+            )
+            .style('stroke-dasharray', '3,3')
+            .style('opacity', 0.3);
+
+        // Enhanced axes
+        const xAxis = svg.append('g')
             .attr('class', 'x-axis')
             .attr('transform', `translate(0,${height})`)
             .call(d3.axisBottom(x)
-                .tickFormat(d3.format('d')));
+                .tickFormat(d3.format('d'))
+                .ticks(10));
 
-        svg.append('g')
+        const yAxis = svg.append('g')
             .attr('class', 'y-axis')
-            .call(d3.axisLeft(y));
+            .call(d3.axisLeft(y)
+                .ticks(10)
+                .tickFormat(d => `$${d}M`));
 
-        // Create the area
+        // Create and animate the area
         const area = d3.area()
             .x(d => x(d.year))
             .y0(height)
             .y1(d => y(d.sales))
             .curve(d3.curveMonotoneX);
 
-        // Add the area with animation
         svg.append("path")
             .datum(yearData)
             .attr("class", "area")
@@ -287,32 +308,33 @@ window.VideoGameViz = {};
             .style("fill", "url(#area-gradient)")
             .style("opacity", 0)
             .transition()
-            .duration(1000)
-            .style("opacity", 1);
+            .duration(1500)
+            .style("opacity", 0.8);
 
-        // Create the line
+        // Create and animate the line
         const line = d3.line()
             .x(d => x(d.year))
             .y(d => y(d.sales))
             .curve(d3.curveMonotoneX);
 
-        // Add the line with animation
         const path = svg.append("path")
             .datum(yearData)
             .attr("class", "line")
             .attr("d", line)
+            .style("fill", "none")
+            .style("stroke", "#8B0000")
+            .style("stroke-width", 3)
             .style("opacity", 0);
 
-        // Animate the line
         const pathLength = path.node().getTotalLength();
         path.style("stroke-dasharray", pathLength + " " + pathLength)
             .style("stroke-dashoffset", pathLength)
             .style("opacity", 1)
             .transition()
-            .duration(2000)
+            .duration(2500)
             .style("stroke-dashoffset", 0);
 
-        // Add dots with animation
+        // Enhanced data points
         const dots = svg.selectAll(".dot")
             .data(yearData)
             .enter()
@@ -321,26 +343,28 @@ window.VideoGameViz = {};
             .attr("cx", d => x(d.year))
             .attr("cy", d => y(d.sales))
             .attr("r", 0)
-            .style("opacity", 0);
+            .style("fill", "#8B0000")
+            .style("stroke", "white")
+            .style("stroke-width", 2);
 
-        // Animate dots
         dots.transition()
-            .delay((d, i) => i * 50)
-            .duration(500)
-            .attr("r", 5)
+            .delay((d, i) => i * 100)
+            .duration(800)
+            .attr("r", 6)
             .style("opacity", 1);
 
-        // Create tooltip
+        // Enhanced tooltip
         const tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
-            .style("opacity", 0);
+            .style("opacity", 0)
+            .style("position", "absolute")
+            .style("background-color", "white")
+            .style("border", "1px solid #ddd")
+            .style("border-radius", "8px")
+            .style("padding", "12px")
+            .style("box-shadow", "2px 2px 6px rgba(0,0,0,0.2)");
 
-        // Create vertical guide line
-        const guideLine = svg.append("line")
-            .attr("class", "guide-line")
-            .style("opacity", 0);
-
-        // Add interactive events
+        // Add interactive events with enhanced tooltip
         dots.on("mouseover", function (event, d) {
             const growth = d.year > 1980 ?
                 ((d.sales - yearData[yearData.findIndex(y => y.year === d.year) - 1].sales) /
@@ -349,77 +373,76 @@ window.VideoGameViz = {};
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("r", 8)
-                .style("fill", CHART_COLORS.hover);
+                .attr("r", 9)
+                .style("fill", "#ff4444");
 
             tooltip.transition()
                 .duration(200)
-                .style("opacity", .9);
+                .style("opacity", 1);
 
             tooltip.html(`
-                <div class="tooltip-header">
-                    <strong>${d.year}</strong>
+                <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 8px;">
+                    Year: ${d.year}
                 </div>
-                <div class="tooltip-content">
-                    <div class="tooltip-row">
-                        <span class="label">Global Sales:</span>
-                        <span class="value">$${d.sales.toFixed(2)}M</span>
-                    </div>
-                    <div class="tooltip-row">
-                        <span class="label">Games Released:</span>
-                        <span class="value">${d.gameCount}</span>
-                    </div>
-                    ${growth ? `
-                    <div class="tooltip-row">
-                        <span class="label">YoY Growth:</span>
-                        <span class="value ${growth >= 0 ? 'positive' : 'negative'}">${growth}%</span>
-                    </div>
-                    ` : ''}
+                <div style="margin-bottom: 5px;">
+                    <strong>Global Sales:</strong> $${d.sales.toFixed(2)}M
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Games Released:</strong> ${d.gameCount}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Avg Sales per Game:</strong> $${d.avgSales.toFixed(2)}M
+                </div>
+                ${growth ? `
+                <div style="margin-bottom: 5px;">
+                    <strong>YoY Growth:</strong> 
+                    <span style="color: ${growth >= 0 ? 'green' : 'red'}">${growth}%</span>
+                </div>
+                ` : ''}
+                <div style="margin-top: 8px; font-size: 0.9em;">
+                    <strong>Top Game:</strong> ${d.topGame}
                 </div>
             `)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 10) + "px");
-
-            guideLine
-                .attr("x1", x(d.year))
-                .attr("x2", x(d.year))
-                .attr("y1", 0)
-                .attr("y2", height)
-                .style("opacity", 1);
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 15) + "px");
         })
             .on("mouseout", function () {
                 d3.select(this)
                     .transition()
                     .duration(200)
-                    .attr("r", 5)
-                    .style("fill", CHART_COLORS.primary);
+                    .attr("r", 6)
+                    .style("fill", "#8B0000");
 
                 tooltip.transition()
                     .duration(500)
                     .style("opacity", 0);
-
-                guideLine.style("opacity", 0);
             });
 
-        // Add axis labels
+        // Enhanced axis labels
         svg.append("text")
             .attr("class", "axis-label")
             .attr("text-anchor", "middle")
-            .attr("transform", `translate(${-40},${height / 2}) rotate(-90)`)
-            .text("Global Sales (Millions)");
+            .attr("transform", `translate(${-margin.left / 1.5},${height / 2}) rotate(-90)`)
+            .style("font-size", "14px")
+            .style("font-weight", "bold")
+            .text("Global Sales (Millions USD)");
 
         svg.append("text")
             .attr("class", "axis-label")
             .attr("text-anchor", "middle")
-            .attr("transform", `translate(${width / 2},${height + 40})`)
+            .attr("transform", `translate(${width / 2},${height + margin.bottom / 1.5})`)
+            .style("font-size", "14px")
+            .style("font-weight", "bold")
             .text("Year");
 
-        // Add chart title
+        // Enhanced chart title
         svg.append("text")
             .attr("class", "chart-title")
             .attr("text-anchor", "middle")
-            .attr("transform", `translate(${width / 2},${-10})`)
-            .text("Video Game Sales Timeline (1980-2016)");
+            .attr("transform", `translate(${width / 2},${-margin.top / 2})`)
+            .style("font-size", "20px")
+            .style("font-weight", "bold")
+            .text("Video Game Industry Global Sales Timeline (1980-2016)");
     }
 
     function createGenreChart(data) {
