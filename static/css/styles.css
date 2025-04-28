@@ -806,95 +806,72 @@ circle:hover {
     filter: drop-shadow(0 0 5px rgba(139, 0, 0, 0.5));
 }
 
-/* Timeline chart specific styles */
+/* Timeline Visualization Styles */
+
+/* Main line styling for the trend line */
 .line {
     fill: none;
     stroke: #8B0000;
+    /* Dark red color */
     stroke-width: 3;
     filter: drop-shadow(0 3px 6px rgba(139, 0, 0, 0.3));
+    /* Adds depth */
 }
 
-.area {
-    fill: url(#area-gradient);
-    transition: opacity 0.3s ease;
-}
-
+/* Data point styling */
 .dot {
     fill: #8B0000;
+    /* Matches line color */
     stroke: white;
+    /* White border for contrast */
     stroke-width: 2px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    /* Shows interactivity */
+    transition: fill 0.2s ease, r 0.2s ease;
+    /* Smooth transitions */
 }
 
-.guide-line {
-    stroke: rgba(139, 0, 0, 0.3);
-    stroke-width: 1px;
-    stroke-dasharray: 4, 4;
-    pointer-events: none;
+/* Hover state for data points */
+.dot:hover {
+    fill: var(--accent-color);
+    r: 8;
+    /* Increases size on hover */
 }
 
-.grid line {
-    stroke: #e0e0e0;
-    stroke-opacity: 0.7;
-    shape-rendering: crispEdges;
-}
-
-.grid path {
-    stroke-width: 0;
-}
-
-.axis-label {
-    font-size: 12px;
-    fill: #666;
-}
-
+/* Tooltip container styling */
 .tooltip {
-    position: absolute;
-    padding: 10px;
+    position: fixed;
+    /* Follows cursor */
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid #8B0000;
-    border-radius: 4px;
-    pointer-events: none;
-    font-size: 14px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 280px;
+    z-index: 1000;
+    /* Ensures tooltip stays on top */
 }
 
+/* Tooltip header styling */
 .tooltip-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
-.growth {
-    font-size: 12px;
-    padding: 2px 6px;
-    border-radius: 3px;
+.tooltip-header strong {
+    font-size: 1.2em;
+    color: #8B0000;
 }
 
-.growth.positive {
-    color: #28a745;
-    background: rgba(40, 167, 69, 0.1);
-}
-
-.growth.negative {
-    color: #dc3545;
-    background: rgba(220, 53, 69, 0.1);
-}
-
-.tooltip hr {
-    border: none;
-    border-top: 1px solid rgba(139, 0, 0, 0.2);
-    margin: 5px 0;
-}
-
+/* Tooltip content grid layout */
 .tooltip-grid {
     display: grid;
     gap: 8px;
 }
 
+/* Tooltip statistics styling */
 .tooltip-stat {
     display: flex;
     justify-content: space-between;
@@ -903,18 +880,26 @@ circle:hover {
 
 .stat-label {
     color: #666;
-    font-size: 12px;
+    font-size: 0.9em;
 }
 
 .stat-value {
-    font-weight: 600;
+    font-weight: 500;
     color: #333;
 }
 
-.chart-title {
-    font-size: 24px;
-    font-weight: bold;
-    fill: #333;
+/* Axis styling */
+.axis-label {
+    font-size: 12px;
+    fill: #666;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+    .tooltip {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
 }
 
 /* Timeline specific styles */

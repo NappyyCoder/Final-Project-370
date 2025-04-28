@@ -13,7 +13,9 @@
  *   - Seaborn for initial exploratory analysis
  */
 
-// Use IIFE to avoid global namespace pollution
+// Create a global namespace for our visualization
+window.VideoGameViz = {};
+
 (function () {
     // Constants for colors
     const CHART_COLORS = {
@@ -28,6 +30,18 @@
         local: '/data/vgsales.csv',
         production: '/Final-Project-370/data/vgsales.csv'
     };
+
+    // Declare variables in local scope
+    const margin = {
+        top: 80,
+        right: 120,
+        bottom: 100,
+        left: 100
+    };
+
+    let svg = null;
+    let width = 0;
+    let height = 0;
 
     function getDataPath() {
         // Check if we're on GitHub Pages
@@ -65,7 +79,8 @@
         }
     }
 
-    async function initializeVisualization() {
+    // Expose the initialization function to the global namespace
+    window.VideoGameViz.initialize = async function () {
         try {
             const data = await loadData();
 
@@ -99,19 +114,7 @@
         } catch (error) {
             console.error('Failed to initialize visualization:', error);
         }
-    }
-
-    // Declare variables in local scope
-    const margin = {
-        top: 80,
-        right: 120,
-        bottom: 100,
-        left: 100
     };
-
-    let svg = null;
-    let width = 0;
-    let height = 0;
 
     function createPublisherChart(data) {
         if (!svg) {
@@ -277,8 +280,8 @@
     }
 
     // Initialize when DOM is ready
-    document.addEventListener('DOMContentLoaded', initializeVisualization);
+    document.addEventListener('DOMContentLoaded', window.VideoGameViz.initialize);
 
     // Add window resize handler
-    window.addEventListener('resize', initializeVisualization);
+    window.addEventListener('resize', window.VideoGameViz.initialize);
 })();
