@@ -441,8 +441,9 @@ function createTimelineChart(data) {
             // Enhance dot appearance without changing position
             dot.transition()
                 .duration(200)
-                .attr("r", 8)
+                .attr("r", 10)
                 .style("fill", "#FF4444")
+                .style("filter", "drop-shadow(0 0 6px rgba(255, 68, 68, 0.6))")
                 .attr("opacity", 1);
 
             // Calculate tooltip position
@@ -452,49 +453,108 @@ function createTimelineChart(data) {
             // Show tooltip
             tooltip.transition()
                 .duration(200)
-                .style("opacity", 0.9);
+                .style("opacity", 0.98);
+
+            // Calculate year-over-year change
+            const growthClass = d.growth > 0 ? 'positive' : (d.growth < 0 ? 'negative' : 'neutral');
+            const growthIcon = d.growth > 0 ? '↑' : (d.growth < 0 ? '↓' : '');
+
+            // Calculate market context
+            const marketContext = getMarketContext(d.year, timelineData);
 
             tooltip.html(`
                 <div class="tooltip-header">
                     <strong>${d.year}</strong>
-                    <span class="growth ${d.growth > 0 ? 'positive' : 'negative'}">
-                        ${d.growth ? (d.growth > 0 ? '↑' : '↓') + Math.abs(d.growth) + '%' : ''}
+                    <span class="growth ${growthClass}">
+                        ${growthIcon}${Math.abs(d.growth || 0).toFixed(1)}%
                     </span>
                 </div>
-                <hr>
-                <div class="tooltip-grid">
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Total Sales:</span>
-                        <span class="stat-value">${d.sales.toFixed(2)}M</span>
+                <div class="tooltip-content">
+                    <div class="tooltip-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Total Sales:</span>
+                            <span class="stat-value">${d.sales.toFixed(2)}M</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Games Released:</span>
+                            <span class="stat-value">${d.gameCount}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Sales/Game:</span>
+                            <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
+                        </div>
                     </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Games Released:</span>
-                        <span class="stat-value">${d.gameCount}</span>
+                    <div class="tooltip-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Top Game:</span>
+                            <span class="stat-value">${d.topGame.Name}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Popular Genre:</span>
+                            <span class="stat-value">${d.topGenre}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Top Publisher:</span>
+                            <span class="stat-value">${d.topPublisher || 'N/A'}</span>
+                        </div>
                     </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Avg Sales/Game:</span>
-                        <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
+                    <div class="tooltip-section regional-sales">
+                        <div class="region">
+                            <span class="region-label">NA</span>
+                            <div class="region-bar" style="width: ${(d.naSales / d.sales * 100)}%"></div>
+                            <span class="region-value">${d.naSales?.toFixed(1)}M</span>
+                        </div>
+                        <div class="region">
+                            <span class="region-label">EU</span>
+                            <div class="region-bar" style="width: ${(d.euSales / d.sales * 100)}%"></div>
+                            <span class="region-value">${d.euSales?.toFixed(1)}M</span>
+                        </div>
+                        <div class="region">
+                            <span class="region-label">JP</span>
+                            <div class="region-bar" style="width: ${(d.jpSales / d.sales * 100)}%"></div>
+                            <span class="region-value">${d.jpSales?.toFixed(1)}M</span>
+                        </div>
                     </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Top Game:</span>
-                        <span class="stat-value">${d.topGame.Name}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Popular Genre:</span>
-                        <span class="stat-value">${d.topGenre}</span>
+                    <div class="tooltip-context">
+                        <span class="context-label">Market Context:</span>
+                        <span class="context-value">${marketContext}</span>
                     </div>
                 </div>
             `)
                 .style("left", `${tooltipX}px`)
-                .style("top", `${tooltipY}px`);
+                .style("top", `${tooltipY}px`)
+                .style("transform", "translate(-50%, -100%)");
 
-            // Add vertical guide line
+            // Add vertical guide line with animation
             svg.append("line")
                 .attr("class", "guide-line")
                 .attr("x1", x(d.year))
                 .attr("x2", x(d.year))
                 .attr("y1", height)
-                .attr("y2", y(d.sales));
+                .attr("y2", height)
+                .style("stroke", "#FF4444")
+                .style("stroke-width", 2)
+                .style("stroke-dasharray", "5,5")
+                .style("opacity", 0)
+                .transition()
+                .duration(300)
+                .attr("y2", y(d.sales))
+                .style("opacity", 0.7);
+
+            // Add horizontal guide line
+            svg.append("line")
+                .attr("class", "guide-line")
+                .attr("x1", 0)
+                .attr("x2", x(d.year))
+                .attr("y1", y(d.sales))
+                .attr("y2", y(d.sales))
+                .style("stroke", "#FF4444")
+                .style("stroke-width", 2)
+                .style("stroke-dasharray", "5,5")
+                .style("opacity", 0)
+                .transition()
+                .duration(300)
+                .style("opacity", 0.7);
         })
         .on("mouseout", function () {
             // Reset dot appearance
@@ -503,15 +563,20 @@ function createTimelineChart(data) {
                 .duration(200)
                 .attr("r", 6)
                 .style("fill", "#8B0000")
+                .style("filter", "none")
                 .attr("opacity", 0.7);
 
-            // Hide tooltip
+            // Hide tooltip with fade
             tooltip.transition()
                 .duration(200)
                 .style("opacity", 0);
 
-            // Remove guide line
-            svg.selectAll(".guide-line").remove();
+            // Remove guide lines with animation
+            svg.selectAll(".guide-line")
+                .transition()
+                .duration(200)
+                .style("opacity", 0)
+                .remove();
         });
 
     // Add animated axes
@@ -825,3 +890,50 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Helper function to provide market context based on year
+function getMarketContext(year, data) {
+    // Define key gaming events by year
+    const marketEvents = {
+        1983: "Video game crash of 1983",
+        1985: "Nintendo NES released in North America",
+        1989: "Game Boy released",
+        1991: "Super Nintendo (SNES) released in North America",
+        1994: "Sony PlayStation released in Japan",
+        1995: "PlayStation released in North America",
+        1996: "Nintendo 64 released",
+        2000: "PlayStation 2 released",
+        2001: "Xbox and GameCube released",
+        2005: "Xbox 360 released",
+        2006: "PlayStation 3 and Nintendo Wii released",
+        2007: "Mobile gaming surge begins with iPhone",
+        2011: "Rise of free-to-play and mobile gaming",
+        2013: "PlayStation 4 and Xbox One released",
+        2017: "Nintendo Switch released"
+    };
+
+    // Return the event if it exists for this year
+    if (marketEvents[year]) {
+        return marketEvents[year];
+    }
+
+    // Otherwise, analyze the trend
+    const yearIndex = data.findIndex(d => d.year === year);
+    if (yearIndex > 0 && yearIndex < data.length - 1) {
+        const prevYear = data[yearIndex - 1];
+        const nextYear = data[yearIndex + 1];
+        const currentYear = data[yearIndex];
+
+        if (currentYear.sales > prevYear.sales && currentYear.sales > nextYear.sales) {
+            return "Peak year in local market trend";
+        } else if (currentYear.sales < prevYear.sales && currentYear.sales < nextYear.sales) {
+            return "Trough year in market cycle";
+        } else if (currentYear.sales > prevYear.sales) {
+            return "Growing market trend";
+        } else {
+            return "Declining market trend";
+        }
+    }
+
+    return "No specific market context available";
+}
