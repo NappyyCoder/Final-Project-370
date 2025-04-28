@@ -229,7 +229,7 @@ main {
     fill: #8B0000;
     stroke: white;
     stroke-width: 2px;
-    transition: r 0.2s ease, fill 0.2s ease;
+    transition: fill 0.2s ease, r 0.2s ease;
     pointer-events: all;
     cursor: pointer;
 }
@@ -363,15 +363,14 @@ svg {
     fill: #8B0000;
     stroke: white;
     stroke-width: 2px;
-    transition: r 0.2s ease, fill 0.2s ease;
+    transition: fill 0.2s ease, r 0.2s ease;
     pointer-events: all;
     cursor: pointer;
 }
 
 .dot:hover {
     fill: var(--accent-color);
-    transform: scale(1.2);
-    cursor: pointer;
+    r: 8;
 }
 
 /* Line chart specific styles */

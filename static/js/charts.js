@@ -195,9 +195,129 @@
         `);
     }
 
+    function createTimelineChart(data) {
+        if (!svg) {
+            console.error("SVG not initialized");
+            return;
+        }
+
+        // Process timeline data
+        const timelineData = d3.rollup(data,
+            v => ({
+                sales: d3.sum(v, d => d.Global_Sales),
+                gameCount: v.length
+            }),
+            d => d.Year
+        );
+
+        // Convert to array and filter out null years
+        const yearData = Array.from(timelineData, ([year, value]) => ({
+            year: year,
+            sales: value.sales,
+            gameCount: value.gameCount
+        }))
+            .filter(d => d.year !== null)
+            .sort((a, b) => a.year - b.year);
+
+        // Create scales
+        const x = d3.scaleLinear()
+            .domain([d3.min(yearData, d => d.year), d3.max(yearData, d => d.year)])
+            .range([0, width]);
+
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(yearData, d => d.sales) * 1.1])
+            .range([height, 0]);
+
+        // Create line generator
+        const line = d3.line()
+            .x(d => x(d.year))
+            .y(d => y(d.sales))
+            .curve(d3.curveMonotoneX);
+
+        // Add the line
+        svg.append("path")
+            .datum(yearData)
+            .attr("class", "line")
+            .attr("d", line);
+
+        // Add dots
+        svg.selectAll(".dot")
+            .data(yearData)
+            .enter()
+            .append("circle")
+            .attr("class", "dot")
+            .attr("cx", d => x(d.year))
+            .attr("cy", d => y(d.sales))
+            .attr("r", 5)
+            .attr("data-year", d => d.year);
+
+        // Add axes
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x)
+                .tickFormat(d3.format("d")));
+
+        svg.append("g")
+            .call(d3.axisLeft(y)
+                .tickFormat(d => d + "M"));
+
+        // Add labels
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 10)
+            .text("Year");
+
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", -margin.left + 20)
+            .text("Global Sales (Millions)");
+
+        // Add tooltip
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        // Add hover interactions
+        svg.selectAll(".dot")
+            .on("mouseover", function (event, d) {
+                // Highlight the dot
+                d3.select(this)
+                    .attr("r", 8)
+                    .style("fill", var(--accent - color));
+
+        // Show tooltip
+        tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+        tooltip.html(`
+                    <strong>${d.year}</strong><br/>
+                    Global Sales: ${d.sales.toFixed(2)}M<br/>
+                    Games Released: ${d.gameCount}
+                `)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    })
+            .on("mouseout", function () {
+        // Reset dot appearance
+        d3.select(this)
+            .attr("r", 5)
+            .style("fill", "#8B0000");
+
+        // Hide tooltip
+        tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+    });
+}
+
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', initializeVisualization);
 
-    // Add window resize handler
-    window.addEventListener('resize', initializeVisualization);
-})();
+// Add window resize handler
+window.addEventListener('resize', initializeVisualization);
+}) ();
