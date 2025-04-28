@@ -492,48 +492,15 @@ function createTimelineChart(data) {
         .append("circle")
         .attr("class", "dot")
         .attr("cx", d => x(d.year))
-        .attr("cy", d => y(d.sales))
+        .attr("cy", d => y(0)) // Start at bottom for animation
         .attr("r", 6)
-        .attr("fill", "#8B0000")
-        .attr("opacity", 0.7);
+        .attr("opacity", 0.7)
+        .call(addLinePointTooltip, d => {
+            const growthClass = d.growth > 0 ? "positive" : "negative";
+            const growthIcon = d.growth > 0 ? "↑ " : "↓ ";
+            const marketContext = getMarketContext(d.year);
 
-    // Create tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0)
-        .style("position", "absolute")
-        .style("pointer-events", "none");
-
-    // Enhanced dot interaction without movement
-    svg.selectAll(".dot")
-        .on("mouseover", function (event, d) {
-            const dot = d3.select(this);
-
-            // Enhance dot appearance without changing position
-            dot.transition()
-                .duration(200)
-                .attr("r", 10)
-                .style("fill", "#FF4444")
-                .style("filter", "drop-shadow(0 0 6px rgba(255, 68, 68, 0.6))")
-                .attr("opacity", 1);
-
-            // Calculate tooltip position
-            const tooltipX = x(d.year) + margin.left + 20;
-            const tooltipY = y(d.sales) + margin.top - 28;
-
-            // Show tooltip
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", 0.98);
-
-            // Calculate year-over-year change
-            const growthClass = d.growth > 0 ? 'positive' : (d.growth < 0 ? 'negative' : 'neutral');
-            const growthIcon = d.growth > 0 ? '↑' : (d.growth < 0 ? '↓' : '');
-
-            // Calculate market context
-            const marketContext = getMarketContext(d.year, timelineData);
-
-            tooltip.html(`
+            return `
                 <div class="tooltip-header">
                     <strong>${d.year}</strong>
                     <span class="growth ${growthClass}">
@@ -558,96 +525,15 @@ function createTimelineChart(data) {
                     <div class="tooltip-section">
                         <div class="stat-row">
                             <span class="stat-label">Top Game:</span>
-                            <span class="stat-value">${d.topGame.Name}</span>
+                            <span class="stat-value">${d.topGame}</span>
                         </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Popular Genre:</span>
-                            <span class="stat-value">${d.topGenre}</span>
+                        <div class="tooltip-context">
+                            <span class="context-label">Market Context:</span>
+                            <span class="context-value">${marketContext}</span>
                         </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Top Publisher:</span>
-                            <span class="stat-value">${d.topPublisher || 'N/A'}</span>
-                        </div>
-                    </div>
-                    <div class="tooltip-section regional-sales">
-                        <div class="region">
-                            <span class="region-label">NA</span>
-                            <div class="region-bar" style="width: ${(d.naSales / d.sales * 100)}%"></div>
-                            <span class="region-value">${d.naSales?.toFixed(1)}M</span>
-                        </div>
-                        <div class="region">
-                            <span class="region-label">EU</span>
-                            <div class="region-bar" style="width: ${(d.euSales / d.sales * 100)}%"></div>
-                            <span class="region-value">${d.euSales?.toFixed(1)}M</span>
-                        </div>
-                        <div class="region">
-                            <span class="region-label">JP</span>
-                            <div class="region-bar" style="width: ${(d.jpSales / d.sales * 100)}%"></div>
-                            <span class="region-value">${d.jpSales?.toFixed(1)}M</span>
-                        </div>
-                    </div>
-                    <div class="tooltip-context">
-                        <span class="context-label">Market Context:</span>
-                        <span class="context-value">${marketContext}</span>
                     </div>
                 </div>
-            `)
-                .style("left", `${tooltipX}px`)
-                .style("top", `${tooltipY}px`)
-                .style("transform", "translate(-50%, -100%)");
-
-            // Add vertical guide line with animation
-            svg.append("line")
-                .attr("class", "guide-line")
-                .attr("x1", x(d.year))
-                .attr("x2", x(d.year))
-                .attr("y1", height)
-                .attr("y2", height)
-                .style("stroke", "#FF4444")
-                .style("stroke-width", 2)
-                .style("stroke-dasharray", "5,5")
-                .style("opacity", 0)
-                .transition()
-                .duration(300)
-                .attr("y2", y(d.sales))
-                .style("opacity", 0.7);
-
-            // Add horizontal guide line
-            svg.append("line")
-                .attr("class", "guide-line")
-                .attr("x1", 0)
-                .attr("x2", x(d.year))
-                .attr("y1", y(d.sales))
-                .attr("y2", y(d.sales))
-                .style("stroke", "#FF4444")
-                .style("stroke-width", 2)
-                .style("stroke-dasharray", "5,5")
-                .style("opacity", 0)
-                .transition()
-                .duration(300)
-                .style("opacity", 0.7);
-        })
-        .on("mouseout", function () {
-            // Reset dot appearance
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .attr("r", 6)
-                .style("fill", "#8B0000")
-                .style("filter", "none")
-                .attr("opacity", 0.7);
-
-            // Hide tooltip with fade
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", 0);
-
-            // Remove guide lines with animation
-            svg.selectAll(".guide-line")
-                .transition()
-                .duration(200)
-                .style("opacity", 0)
-                .remove();
+            `;
         });
 
     // Add animated axes
