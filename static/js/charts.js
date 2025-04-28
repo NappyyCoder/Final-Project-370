@@ -489,27 +489,18 @@ window.VideoGameViz = {};
     window.VideoGameViz.initialize = async function () {
         try {
             // Clear any existing visualizations first
-            d3.selectAll('.visualization svg').remove();
+            d3.select('#visualization-container').selectAll('*').remove();
             d3.selectAll('.tooltip').remove();
 
             const container = document.getElementById('visualization-container');
             if (!container) {
-                console.warn('Visualization container not found, creating one');
-                const fallbackContainer = document.querySelector('.visualization') || document.querySelector('.chart-container');
-                if (!fallbackContainer) {
-                    throw new Error('No suitable visualization container found');
-                }
-                const newContainer = document.createElement('div');
-                newContainer.id = 'visualization-container';
-                fallbackContainer.appendChild(newContainer);
+                console.error('Visualization container not found');
+                return;
             }
-
-            // Clear any existing content
-            container.innerHTML = '';
 
             const data = await loadData();
 
-            // Set up SVG with animation class
+            // Set up SVG
             width = container.clientWidth - margin.left - margin.right;
             height = 600 - margin.top - margin.bottom;
 
@@ -517,7 +508,7 @@ window.VideoGameViz = {};
                 .append('svg')
                 .attr('width', width + margin.left + margin.right)
                 .attr('height', height + margin.top + margin.bottom)
-                .attr('class', 'chart-animation') // Add animation class
+                .attr('class', 'chart-animation')
                 .append('g')
                 .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -528,31 +519,31 @@ window.VideoGameViz = {};
             } else if (currentPage.includes('timeline.html')) {
                 createTimelineChart(data);
             } else if (currentPage.includes('genres.html')) {
-                createGenreChart(data);  // You'll need to implement this function
+                createGenreChart(data);
             }
         } catch (error) {
             console.error('Failed to initialize visualization:', error);
         }
     };
 
-    // Remove duplicate event listeners
+    // Clean up event listeners
     const initializeViz = () => {
-        if (document.readyState === 'loading') {
-            document.removeEventListener('DOMContentLoaded', initializeViz);
-            document.addEventListener('DOMContentLoaded', window.VideoGameViz.initialize);
-        } else {
+        if (window.VideoGameViz && window.VideoGameViz.initialize) {
             window.VideoGameViz.initialize();
         }
     };
 
-    // Clean up existing event listeners and add new one
-    document.removeEventListener('DOMContentLoaded', window.VideoGameViz.initialize);
-    document.addEventListener('DOMContentLoaded', initializeViz);
-
-    // Update resize handler
+    // Handle resize events
     let resizeTimeout;
     window.addEventListener('resize', function () {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(window.VideoGameViz.initialize, 250);
+        resizeTimeout = setTimeout(initializeViz, 250);
     });
+
+    // Initialize on DOM content loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeViz);
+    } else {
+        initializeViz();
+    }
 })();
