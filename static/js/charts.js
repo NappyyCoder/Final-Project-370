@@ -373,6 +373,118 @@ window.VideoGameViz = {};
             .text("Video Game Sales Timeline (1980-2020)");
     }
 
+    function createGenreChart(data) {
+        // Process data for genres
+        const genreData = d3.rollup(data,
+            v => ({
+                sales: d3.sum(v, d => +d.Global_Sales),
+                count: v.length,
+                avgSale: d3.mean(v, d => +d.Global_Sales)
+            }),
+            d => d.Genre
+        );
+
+        const processedData = Array.from(genreData, ([genre, values]) => ({
+            genre,
+            sales: values.sales,
+            count: values.count,
+            avgSale: values.avgSale
+        }));
+
+        // Set up scales
+        const x = d3.scaleLinear()
+            .domain([0, d3.max(processedData, d => d.count)])
+            .range([0, width]);
+
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(processedData, d => d.sales)])
+            .range([height, 0]);
+
+        // Add axes
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("x", width / 2)
+            .attr("y", 40)
+            .text("Number of Games");
+
+        svg.append("g")
+            .call(d3.axisLeft(y))
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -40)
+            .attr("x", -height / 2)
+            .attr("text-anchor", "middle")
+            .text("Global Sales (millions)");
+
+        // Add dots with animation
+        const dots = svg.selectAll(".genre-point")
+            .data(processedData)
+            .enter()
+            .append("circle")
+            .attr("class", "genre-point")
+            .style("--index", (d, i) => i)
+            .attr("cx", d => x(d.count))
+            .attr("cy", d => y(d.sales))
+            .attr("r", d => Math.sqrt(d.avgSale) * 5)
+            .attr("fill", CHART_COLORS.primary)
+            .attr("opacity", 0.7);
+
+        // Add tooltips
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "genre-tooltip tooltip")
+            .style("opacity", 0);
+
+        dots.on("mouseover", function (event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr("fill", CHART_COLORS.hover)
+                .attr("r", d => Math.sqrt(d.avgSale) * 6);
+
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+
+            tooltip.html(`
+                <div class="tooltip-header">
+                    <strong>${d.genre}</strong>
+                    <span class="market-share">${(d.sales / d3.sum(processedData, d => d.sales) * 100).toFixed(1)}% market share</span>
+                </div>
+                <div class="tooltip-section">
+                    <div class="stat-row">
+                        <span class="stat-label">Total Sales:</span>
+                        <span class="stat-value">$${d.sales.toFixed(2)}M</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Games:</span>
+                        <span class="stat-value">${d.count}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Avg Sales:</span>
+                        <span class="stat-value">$${d.avgSale.toFixed(2)}M</span>
+                    </div>
+                </div>
+            `)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 10) + "px");
+        })
+            .on("mouseout", function (d) {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("fill", CHART_COLORS.primary)
+                    .attr("r", d => Math.sqrt(d.avgSale) * 5);
+
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+    }
+
     // Expose the initialization function to the global namespace
     window.VideoGameViz.initialize = async function () {
         try {
