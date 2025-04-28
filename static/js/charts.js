@@ -1,7 +1,10 @@
 // Global configurations
-const margin = { top: 80, right: 100, bottom: 80, left: 90 };
-const width = 1100 - margin.left - margin.right;
-const height = 600 - margin.top - margin.bottom;
+const margin = {
+    top: 80,     // Increased from 60
+    right: 120,  // Increased from 100
+    bottom: 100, // Increased from 80
+    left: 100    // Increased from 90
+};
 
 // Global tooltip
 const tooltip = d3.select("body")
@@ -11,41 +14,42 @@ const tooltip = d3.select("body")
 
 // Utility function to create responsive chart base
 function createResponsiveChart(selector) {
+    // Calculate available space
+    const containerWidth = Math.min(1200, window.innerWidth - 40);
+    const containerHeight = Math.min(700, window.innerHeight * 0.7);
+
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerHeight - margin.top - margin.bottom;
+
     const svg = d3.select(selector)
         .select(".chart-container")
         .append("svg")
-        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
+        .attr("preserveAspectRatio", "xMidYMid meet")
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-    return svg;
+
+    return { svg, width, height };
 }
 
 // Utility function to add axes labels
-function addAxesLabels(svg, xLabel, yLabel) {
-    // X-axis label
+function addAxesLabels(svg, xLabel, yLabel, width, height) {
+    // X-axis label with more bottom margin
     svg.append("text")
         .attr("class", "axis-label")
         .attr("x", width / 2)
-        .attr("y", height + margin.bottom - 10)
+        .attr("y", height + margin.bottom - 20) // Adjusted position
         .attr("text-anchor", "middle")
-        .text(xLabel)
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .text(xLabel);
 
-    // Y-axis label
+    // Y-axis label with more left margin
     svg.append("text")
         .attr("class", "axis-label")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
-        .attr("y", -margin.left + 20)
+        .attr("y", -margin.left + 30) // Adjusted position
         .attr("text-anchor", "middle")
-        .text(yLabel)
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .text(yLabel);
 }
 
 // Create publisher chart with animations
@@ -344,7 +348,7 @@ function createTimelineChart(data) {
     // Update chart title to reflect actual data range
     const yearRange = `${d3.min(timelineData, d => d.year)}-${d3.max(timelineData, d => d.year)}`;
 
-    const svg = createResponsiveChart("#visualization-3");
+    const { svg, width, height } = createResponsiveChart("#visualization-3");
 
     // Add gradient for area
     const gradient = svg.append("defs")
@@ -557,17 +561,7 @@ function createTimelineChart(data) {
 
 // Create genre chart with animations
 function createGenreChart(data) {
-    // Update margins to prevent cutoff
-    const margin = { top: 60, right: 120, bottom: 80, left: 90 };
-    const width = Math.min(1100, window.innerWidth - 100) - margin.left - margin.right;
-    const height = Math.min(600, window.innerHeight * 0.7) - margin.top - margin.bottom;
-
-    const svg = d3.select("#visualization-2")
-        .select(".chart-container")
-        .append("svg")
-        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
+    const { svg, width, height } = createResponsiveChart("#visualization-2");
 
     // Process data for genres
     const genreData = d3.rollup(data,
@@ -743,8 +737,8 @@ function createGenreChart(data) {
                 .style("opacity", 0);
         });
 
-    // Add genre labels with better positioning
-    svg.selectAll(".genre-label")
+    // Add genre labels with better positioning and collision detection
+    const labels = svg.selectAll(".genre-label")
         .data(scatterData)
         .enter()
         .append("text")
@@ -755,6 +749,23 @@ function createGenreChart(data) {
         .style("font-size", "12px")
         .style("font-weight", "500")
         .text(d => d.genre);
+
+    // Implement basic label collision detection
+    const padding = 20;
+    labels.each(function () {
+        const thisLabel = d3.select(this);
+        const thisY = parseFloat(thisLabel.attr("y"));
+
+        labels.each(function () {
+            const otherLabel = d3.select(this);
+            const otherY = parseFloat(otherLabel.attr("y"));
+
+            if (thisLabel.node() !== otherLabel.node() &&
+                Math.abs(thisY - otherY) < padding) {
+                thisLabel.attr("y", thisY + padding);
+            }
+        });
+    });
 
     // Add chart title
     svg.append("text")

@@ -198,12 +198,53 @@ main {
 }
 
 .chart-container {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: var(--shadow-inner);
-    min-height: 400px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
     position: relative;
+}
+
+.chart-container svg {
+    width: 100%;
+    height: auto;
+    max-height: 700px;
+}
+
+/* Ensure axis labels are visible */
+.axis-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Ensure tick labels are visible */
+.tick text {
+    font-size: 12px;
+}
+
+/* Add padding to visualization section */
+.visualization {
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        padding: 10px;
+    }
+
+    .visualization {
+        padding: 1rem;
+    }
+
+    .axis-label {
+        font-size: 12px;
+    }
+
+    .tick text {
+        font-size: 10px;
+    }
 }
 
 /* Chart Responsive Styles */
