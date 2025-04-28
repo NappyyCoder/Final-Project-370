@@ -26,20 +26,49 @@
     </header>
 
     <main>
-        <div class="visualization">
-            <h2>Sales Timeline Analysis</h2>
-            <div id="visualization-container"></div>
-        </div>
+        <section class="content-section">
+            <h2>Industry Evolution Over Time</h2>
+            <p>This visualization tracks the evolution of video game sales across different time periods, highlighting
+                key industry milestones and trends in the gaming market.</p>
+
+            <div class="visualization">
+                <div id="visualization-container" class="chart-container"></div>
+            </div>
+
+            <div class="analysis-section">
+                <h3>Historical Milestones</h3>
+                <p>Key periods in gaming industry development:</p>
+                <ul>
+                    <li><strong>1980s:</strong> Early console era and arcade dominance</li>
+                    <li><strong>1990s:</strong> Rise of 3D gaming and CD-ROM technology</li>
+                    <li><strong>2000s:</strong> Online gaming revolution</li>
+                    <li><strong>2010s:</strong> Mobile gaming and digital distribution</li>
+                </ul>
+            </div>
+
+            <div class="analysis-section">
+                <h3>Market Growth Patterns</h3>
+                <p>Analysis of industry growth trends:</p>
+                <ul>
+                    <li>Peak sales periods</li>
+                    <li>Impact of new console generations</li>
+                    <li>Market expansion phases</li>
+                </ul>
+            </div>
+
+            <div class="analysis-section">
+                <h3>Technology Impact</h3>
+                <p>How technological advances influenced sales:</p>
+                <ul>
+                    <li>Hardware evolution effects</li>
+                    <li>Digital transformation impact</li>
+                    <li>Platform transitions</li>
+                </ul>
+            </div>
+        </section>
     </main>
 
-    <!-- Move scripts to end of body and remove duplicate initialization -->
     <script src="./static/js/charts.js"></script>
-    <script>
-        // Single initialization point
-        if (window.VideoGameViz && window.VideoGameViz.initialize) {
-            window.VideoGameViz.initialize();
-        }
-    </script>
 </body>
 
 </html>
