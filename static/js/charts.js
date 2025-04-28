@@ -99,11 +99,12 @@ window.VideoGameViz = {};
         svg.append("g")
             .call(d3.axisLeft(y));
 
-        // Add bars with enhanced styling
+        // Add bars with animation indices
         const bars = svg.selectAll(".bar")
             .data(processedData)
             .enter().append("rect")
             .attr("class", "bar")
+            .style("--index", (d, i) => i) // Add index for staggered animation
             .attr("x", d => x(d.publisher))
             .attr("width", x.bandwidth())
             .attr("y", d => y(d.sales))
@@ -246,7 +247,7 @@ window.VideoGameViz = {};
             .y1(d => y(d.sales))
             .curve(d3.curveMonotoneX);
 
-        // Add the area
+        // Add the area with animation
         svg.append("path")
             .datum(yearData)
             .attr("class", "area")
@@ -258,18 +259,19 @@ window.VideoGameViz = {};
             .y(d => y(d.sales))
             .curve(d3.curveMonotoneX);
 
-        // Add the line
+        // Add the line with animation
         svg.append("path")
             .datum(yearData)
             .attr("class", "line")
             .attr("d", line);
 
-        // Add dots
+        // Add dots with animation
         svg.selectAll(".dot")
             .data(yearData)
             .enter()
             .append("circle")
             .attr("class", "dot")
+            .style("--index", (d, i) => i) // Add index for staggered animation
             .attr("cx", d => x(d.year))
             .attr("cy", d => y(d.sales))
             .attr("r", 5);
@@ -374,15 +376,17 @@ window.VideoGameViz = {};
     // Expose the initialization function to the global namespace
     window.VideoGameViz.initialize = async function () {
         try {
+            // Clear any existing visualizations first
+            d3.selectAll('.visualization svg').remove();
+            d3.selectAll('.tooltip').remove();
+
             const container = document.getElementById('visualization-container');
             if (!container) {
                 console.warn('Visualization container not found, creating one');
-                // Find the first .visualization or .chart-container element
                 const fallbackContainer = document.querySelector('.visualization') || document.querySelector('.chart-container');
                 if (!fallbackContainer) {
                     throw new Error('No suitable visualization container found');
                 }
-                // Create the visualization container
                 const newContainer = document.createElement('div');
                 newContainer.id = 'visualization-container';
                 fallbackContainer.appendChild(newContainer);
@@ -393,7 +397,7 @@ window.VideoGameViz = {};
 
             const data = await loadData();
 
-            // Set up SVG
+            // Set up SVG with animation class
             width = container.clientWidth - margin.left - margin.right;
             height = 600 - margin.top - margin.bottom;
 
@@ -401,6 +405,7 @@ window.VideoGameViz = {};
                 .append('svg')
                 .attr('width', width + margin.left + margin.right)
                 .attr('height', height + margin.top + margin.bottom)
+                .attr('class', 'chart-animation') // Add animation class
                 .append('g')
                 .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -418,10 +423,21 @@ window.VideoGameViz = {};
         }
     };
 
-    // Initialize when DOM is ready
-    document.addEventListener('DOMContentLoaded', window.VideoGameViz.initialize);
+    // Remove duplicate event listeners
+    const initializeViz = () => {
+        if (document.readyState === 'loading') {
+            document.removeEventListener('DOMContentLoaded', initializeViz);
+            document.addEventListener('DOMContentLoaded', window.VideoGameViz.initialize);
+        } else {
+            window.VideoGameViz.initialize();
+        }
+    };
 
-    // Add window resize handler with debounce
+    // Clean up existing event listeners and add new one
+    document.removeEventListener('DOMContentLoaded', window.VideoGameViz.initialize);
+    document.addEventListener('DOMContentLoaded', initializeViz);
+
+    // Update resize handler
     let resizeTimeout;
     window.addEventListener('resize', function () {
         clearTimeout(resizeTimeout);
