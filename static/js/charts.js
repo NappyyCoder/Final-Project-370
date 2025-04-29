@@ -503,9 +503,9 @@ function createTimelineChart(data) {
             return `
                 <div class="tooltip-header">
                     <strong>${d.year}</strong>
-                    <span class="growth ${growthClass}">
-                        ${growthIcon}${Math.abs(d.growth || 0).toFixed(1)}%
-                    </span>
+                    
+                        
+                   
                 </div>
                 <div class="tooltip-content">
                     <div class="tooltip-section">
@@ -657,44 +657,41 @@ function createGenreChart(data) {
                 .duration(200)
                 .style("opacity", .9);
             tooltip.html(`
-                <strong>${d.genre}</strong><br>
-                <hr>
-                <div class="tooltip-grid">
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Total Sales:</span>
-                        <span class="stat-value">${d.sales.toFixed(2)}M</span>
+                <div class="tooltip-header">
+                    <strong>${d.genre}</strong>
+                </div>
+                <div class="tooltip-content">
+                    <div class="tooltip-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Total Sales:</span>
+                            <span class="stat-value">${d.sales.toFixed(2)}M</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Market Share:</span>
+                            <span class="stat-value">${(d.sales / totalSales * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Number of Games:</span>
+                            <span class="stat-value">${d.count}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Sales/Game:</span>
+                            <span class="stat-value">${(d.sales / d.count).toFixed(2)}M</span>
+                        </div>
                     </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Market Share:</span>
-                        <span class="stat-value">${(d.sales / totalSales * 100).toFixed(1)}%</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Number of Games:</span>
-                        <span class="stat-value">${d.count}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Avg Sales/Game:</span>
-                        <span class="stat-value">${(d.sales / d.count).toFixed(2)}M</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Top Game:</span>
-                        <span class="stat-value">${topGame.Name}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Best Publisher:</span>
-                        <span class="stat-value">${bestPublisher.pub}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Peak Year:</span>
-                        <span class="stat-value">${d.peakYear || 'N/A'}</span>
-                    </div>
-                    <div class="tooltip-stat">
-                        <span class="stat-label">Regional Success:</span>
-                        <span class="stat-value">
-                            NA: ${d.naSales?.toFixed(2)}M<br>
-                            EU: ${d.euSales?.toFixed(2)}M<br>
-                            JP: ${d.jpSales?.toFixed(2)}M
-                        </span>
+                    <div class="tooltip-section">
+                        <div class="stat-row">
+                            <span class="stat-label">Top Game:</span>
+                            <span class="stat-value">${topGame.Name}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Best Publisher:</span>
+                            <span class="stat-value">${bestPublisher.pub}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Peak Year:</span>
+                            <span class="stat-value">${d.peakYear || 'N/A'}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="tooltip-footer">
