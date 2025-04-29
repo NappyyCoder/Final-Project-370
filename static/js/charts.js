@@ -53,30 +53,40 @@ function addBarTooltip(selection, getContent) {
         });
 }
 
-// Example usage for a line chart point
+// Function to add tooltips to line chart points
 function addLinePointTooltip(selection, getContent) {
     selection
         .on("mouseover", function (event, d) {
+            // Visual feedback on hover
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("r", 10)
-                .style("fill", "#FF4444")
-                .style("filter", "drop-shadow(0 0 6px rgba(255, 68, 68, 0.6))")
-                .attr("opacity", 1);
+                .attr("r", 8)
+                .attr("fill", "#8B0000")
+                .attr("opacity", 1)
+                .style("filter", "drop-shadow(0 0 3px rgba(139, 0, 0, 0.6))");
 
+            // Show tooltip
             showTooltip(event, d, getContent(d));
         })
         .on("mouseout", function () {
+            // Reset visual state
             d3.select(this)
                 .transition()
                 .duration(200)
                 .attr("r", 6)
-                .style("fill", "#8B0000")
-                .style("filter", "none")
-                .attr("opacity", 0.7);
+                .attr("fill", "#8B0000")
+                .attr("opacity", 0.7)
+                .style("filter", "none");
 
+            // Hide tooltip
             hideTooltip();
+        })
+        .on("mousemove", function (event, d) {
+            // Update tooltip position on mouse move
+            tooltip
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
         });
 }
 
@@ -261,13 +271,6 @@ function createPublisherChart(data) {
         .attr("y", d => y(d.sales))
         .attr("height", d => height - y(d.sales));
 
-    // Enhanced tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "publisher-tooltip")
-        .style("opacity", 0)
-        .style("position", "absolute")
-        .style("pointer-events", "none");
-
     // Bar interactions
     bars.on("mouseover", function (event, d) {
         const bar = d3.select(this);
@@ -279,18 +282,8 @@ function createPublisherChart(data) {
             .style("filter", "drop-shadow(0 6px 8px rgba(0, 0, 0, 0.2))")
             .attr("transform", "scale(1, 1.02)");
 
-        // Calculate tooltip position relative to the bar
-        const barX = parseFloat(bar.attr("x"));
-        const barY = parseFloat(bar.attr("y"));
-        const tooltipX = x(d.publisher) + margin.left + x.bandwidth() / 2;
-        const tooltipY = y(d.sales) + margin.top - 10;
-
         // Show tooltip with animation
-        tooltip.transition()
-            .duration(200)
-            .style("opacity", 0.98);
-
-        tooltip.html(`
+        showTooltip(event, d, `
             <div class="tooltip-header">
                 <strong>${d.publisher}</strong>
                 <span class="market-share">${(d.sales / totalSales * 100).toFixed(1)}% Market Share</span>
@@ -338,10 +331,7 @@ function createPublisherChart(data) {
                     </div>
                 </div>
             </div>
-        `)
-            .style("left", `${tooltipX}px`)
-            .style("top", `${tooltipY}px`)
-            .style("transform", "translate(-50%, -100%)");
+        `);
     })
         .on("mouseout", function () {
             // Reset bar appearance
@@ -353,10 +343,11 @@ function createPublisherChart(data) {
                 .attr("transform", "scale(1, 1)");
 
             // Hide tooltip
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", 0);
+            hideTooltip();
         });
+
+    // Remove the publisher-specific tooltip that was created earlier
+    d3.select(".publisher-tooltip").remove();
 
     // Add value labels on top of bars with animation
     svg.selectAll(".value-label")
@@ -378,193 +369,235 @@ function createPublisherChart(data) {
 
 // Create timeline chart with animations
 function createTimelineChart(data) {
-    const svg = createResponsiveChart("#visualization-3");
+    console.log("Creating timeline chart with", data.length, "data points");
 
-    // Add gradient for area
-    const gradient = svg.append("defs")
-        .append("linearGradient")
-        .attr("id", "area-gradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%");
+    // Filter out entries with null/undefined years
+    const filteredData = data.filter(d => d.Year !== null && d.Year !== undefined);
 
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.6);
+    // Process data for timeline
+    const timelineData = [];
+    const yearGroups = d3.group(filteredData, d => d.Year);
 
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#8B0000")
-        .attr("stop-opacity", 0.1);
+    // Process data by year
+    yearGroups.forEach((yearGames, year) => {
+        const totalSales = d3.sum(yearGames, d => d.Global_Sales);
+        const prevYear = year - 1;
+        let growth = 0;
 
-    // Process data by year with additional metrics
-    const yearlyData = d3.rollup(data,
-        v => ({
-            sales: d3.sum(v, d => d.Global_Sales),
-            gameCount: v.length,
-            topGame: v.sort((a, b) => b.Global_Sales - a.Global_Sales)[0],
-            avgSales: d3.mean(v, d => d.Global_Sales),
-            genres: d3.rollup(v, games => games.length, d => d.Genre)
-        }),
-        d => d.Year
-    );
-
-    const timelineData = Array.from(yearlyData, ([year, stats]) => ({
-        year: +year, // Ensure year is a number
-        sales: stats.sales,
-        gameCount: stats.gameCount,
-        topGame: stats.topGame,
-        avgSales: stats.avgSales,
-        topGenre: Array.from(stats.genres.entries())
-            .sort((a, b) => b[1] - a[1])[0][0]
-    }))
-        .filter(d => d.year !== null && !isNaN(d.year) && d.year >= 1980 && d.year <= 2020) // Filter valid years within a reasonable range
-        .sort((a, b) => a.year - b.year);
-
-    // Calculate year-over-year growth
-    timelineData.forEach((d, i) => {
-        if (i > 0) {
-            d.growth = ((d.sales - timelineData[i - 1].sales) / timelineData[i - 1].sales * 100).toFixed(1);
+        if (yearGroups.has(prevYear)) {
+            const prevYearGames = yearGroups.get(prevYear);
+            const prevTotalSales = d3.sum(prevYearGames, d => d.Global_Sales);
+            growth = prevTotalSales > 0 ? ((totalSales - prevTotalSales) / prevTotalSales) * 100 : 0;
         }
+
+        timelineData.push({
+            year: +year,
+            sales: totalSales,
+            growth: growth,
+            gameCount: yearGames.length
+        });
     });
 
-    // Create scales
+    // Sort by year
+    timelineData.sort((a, b) => a.year - b.year);
+
+    console.log("Processed timeline data:", timelineData);
+
+    // Clear any existing chart
+    const vizContainer = document.getElementById('visualization-3');
+    if (!vizContainer) {
+        console.error("Visualization container not found");
+        return;
+    }
+
+    vizContainer.innerHTML = '<div id="timeline-chart" class="chart-container"></div>';
+
+    // Use global margin settings
+    const width = 1100 - margin.left - margin.right;
+    const height = 600 - margin.top - margin.bottom;
+
+    // Create SVG with proper dimensions
+    const svg = d3.select("#timeline-chart")
+        .append("svg")
+        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Set up scales with padding
+    const yearMin = d3.min(timelineData, d => d.year);
+    const yearMax = d3.max(timelineData, d => d.year);
+    const yearPadding = (yearMax - yearMin) * 0.05; // 5% padding
+
     const x = d3.scaleLinear()
-        .domain(d3.extent(timelineData, d => d.year))
-        .range([0, width])
-        .nice();
+        .domain([yearMin - yearPadding, yearMax + yearPadding])
+        .range([0, width]);
 
+    const salesMax = d3.max(timelineData, d => d.sales);
     const y = d3.scaleLinear()
-        .domain([0, d3.max(timelineData, d => d.sales)])
-        .range([height, 0])
-        .nice();
+        .domain([0, salesMax * 1.2]) // 20% padding at the top
+        .range([height, 0]);
 
-    // Add gridlines
+    // Add X axis
     svg.append("g")
-        .attr("class", "grid")
-        .call(d3.axisLeft(y)
-            .tickSize(-width)
-            .tickFormat("")
-        );
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).tickFormat(d3.format("d")).ticks(10))
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", "rotate(-45)");
 
-    // Add area with animation
-    const area = d3.area()
-        .x(d => x(d.year))
-        .y0(height)
-        .y1(d => y(d.sales));
+    // Add Y axis
+    svg.append("g")
+        .call(d3.axisLeft(y));
 
+    // Add X axis label
+    svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("x", width / 2)
+        .attr("y", height + 60)
+        .text("Year")
+        .style("font-size", "14px");
+
+    // Add Y axis label
+    svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -60)
+        .attr("x", -height / 2)
+        .text("Global Sales (millions)")
+        .style("font-size", "14px");
+
+    // Add title
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", -40)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .text("Video Game Sales Timeline");
+
+    // Add line
     svg.append("path")
         .datum(timelineData)
-        .attr("class", "area")
-        .attr("fill", "url(#area-gradient)")
-        .attr("d", area)
-        .style("opacity", 0)
-        .transition()
-        .duration(1500)
-        .style("opacity", 1);
+        .attr("fill", "none")
+        .attr("stroke", "#8B0000")
+        .attr("stroke-width", 3)
+        .attr("d", d3.line()
+            .x(d => x(d.year))
+            .y(d => y(d.sales))
+        );
 
-    // Add line with animation
-    const line = d3.line()
-        .x(d => x(d.year))
-        .y(d => y(d.sales));
-
-    const path = svg.append("path")
-        .datum(timelineData)
-        .attr("class", "line")
-        .attr("d", line)
-        .style("opacity", 0)
-        .attr("stroke-dasharray", function () {
-            const length = this.getTotalLength();
-            return `${length} ${length}`;
-        })
-        .attr("stroke-dashoffset", function () {
-            return this.getTotalLength();
-        })
-        .transition()
-        .duration(2000)
-        .style("opacity", 1)
-        .attr("stroke-dashoffset", 0);
-
-    // Add interactive dots with proper positioning
-    const dots = svg.selectAll(".dot")
+    // Add dots with absolutely fixed positioning
+    svg.selectAll(".timeline-dot")
         .data(timelineData)
         .enter()
         .append("circle")
-        .attr("class", "dot")
+        .attr("class", "timeline-dot")
         .attr("cx", d => x(d.year))
-        .attr("cy", d => y(d.sales)) // Position directly on the line instead of y(0)
+        .attr("cy", d => y(d.sales))
         .attr("r", 6)
+        .attr("fill", "#8B0000")
+        .attr("stroke", "white")
+        .attr("stroke-width", 2)
         .attr("opacity", 0.7)
-        .call(addLinePointTooltip, d => {
-            const growthClass = d.growth > 0 ? "positive" : "negative";
-            const growthIcon = d.growth > 0 ? "↑ " : "↓ ";
-            const marketContext = getMarketContext(d.year);
+        // Add invisible larger hit area for better hover detection
+        .each(function (d, i) {
+            const cx = x(d.year);
+            const cy = y(d.sales);
 
-            return `
-                <div class="tooltip-header">
-                    <strong>${d.year}</strong>
-                    
-                        
-                   
-                </div>
-                <div class="tooltip-content">
-                    <div class="tooltip-section">
-                        <div class="stat-row">
-                            <span class="stat-label">Total Sales:</span>
-                            <span class="stat-value">${d.sales.toFixed(2)}M</span>
+            // Calculate percent increase from previous year
+            const prevYearData = i > 0 ? timelineData[i - 1] : null;
+            const percentIncrease = prevYearData ?
+                ((d.sales - prevYearData.sales) / prevYearData.sales * 100).toFixed(1) : "N/A";
+
+            // Calculate industry trends
+            const industryTrend = getIndustryTrend(d.year);
+
+            // Calculate market share distribution
+            const platformDistribution = getPlatformDistribution(d.year);
+
+            // Calculate top publishers for this year
+            const topPublishers = getTopPublishers(d.year);
+
+            // Add invisible hit area
+            svg.append("circle")
+                .attr("class", "hit-area")
+                .attr("cx", cx)
+                .attr("cy", cy)
+                .attr("r", 15)
+                .attr("fill", "transparent")
+                .attr("pointer-events", "all")
+                .on("mouseover", function (event) {
+                    // Find the actual dot that corresponds to this hit area
+                    const dot = d3.select(`.timeline-dot[cx="${cx}"][cy="${cy}"]`);
+
+                    // Change only appearance properties
+                    dot.attr("r", 9)
+                        .attr("fill", "#FF4444")
+                        .attr("opacity", 1)
+                        .attr("stroke-width", 3)
+                        .attr("stroke", "#FFFFFF");
+
+                    // Determine growth arrow and color
+                    const growthArrow = d.growth >= 0 ? '▲' : '▼';
+                    const growthClass = d.growth >= 0 ? 'positive' : 'negative';
+
+                    // Show tooltip with detailed information
+                    showTooltip(event, d, `
+                        <div class="timeline-tooltip">
+                            <div class="tooltip-header">
+                                <h3>${d.year}</h3>
+                                <span class="sales-value">Video Game Industry</span>
+                            </div>
+                            <div class="tooltip-body">
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Total Market Size:</span>
+                                    <span class="tooltip-value">${d.sales.toFixed(1)}M Units</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Year-over-Year Growth:</span>
+                                    <span class="tooltip-value growth ${growthClass}">
+                                        ${growthArrow} ${Math.abs(d.growth).toFixed(1)}%
+                                    </span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Games Released:</span>
+                                    <span class="tooltip-value">${d.gameCount}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Market Context:</span>
+                                    <span class="tooltip-value">${getMarketContext(d.year)}</span>
+                                </div>
+                                <div class="tooltip-row">
+                                    <span class="tooltip-label">Industry Phase:</span>
+                                    <span class="tooltip-value">${getIndustryTrend(d.year).phase}</span>
+                                </div>
+                            </div>
+                            <div class="tooltip-footer">
+                                <div class="tooltip-hint">Historical Significance: ${getHistoricalSignificance(d.year)}</div>
+                            </div>
                         </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Games Released:</span>
-                            <span class="stat-value">${d.gameCount}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Avg Sales/Game:</span>
-                            <span class="stat-value">${d.avgSales.toFixed(2)}M</span>
-                        </div>
-                    </div>
-                    <div class="tooltip-section">
-                        <div class="stat-row">
-                            <span class="stat-label">Top Game:</span>
-                            <span class="stat-value">${d.topGame.Name}</span>
-                        </div>
-                        <div class="tooltip-context">
-                            <span class="context-label">Market Context:</span>
-                            <span class="context-value">${marketContext}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
+                    `);
+                })
+                .on("mouseout", function () {
+                    // Find the actual dot that corresponds to this hit area
+                    const dot = d3.select(`.timeline-dot[cx="${cx}"][cy="${cy}"]`);
+
+                    // Reset to original appearance
+                    dot.attr("r", 6)
+                        .attr("fill", "#8B0000")
+                        .attr("opacity", 0.7)
+                        .attr("stroke-width", 2);
+
+                    // Hide tooltip
+                    hideTooltip();
+                });
         });
 
-    // Add animated axes
-    svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", `translate(0,${height})`)
-        .style("opacity", 0)
-        .call(d3.axisBottom(x).tickFormat(d3.format("d")))
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
-
-    svg.append("g")
-        .attr("class", "y-axis")
-        .style("opacity", 0)
-        .call(d3.axisLeft(y))
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
-
-    // Add chart title with animation
-    svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", width / 2)
-        .attr("y", -margin.top / 2)
-        .attr("text-anchor", "middle")
-        .style("opacity", 0)
-        .text("Video Game Sales Timeline (1980-2020)")
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+    console.log("Timeline chart created successfully");
 }
 
 // Create genre chart with animations
@@ -605,70 +638,67 @@ function createGenreChart(data) {
         .domain([0, d3.max(scatterData, d => d.sales)])
         .range([height, 0]);
 
-    // Add axes with animations
-    svg.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x))
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+    // Define bubble size scale
+    const bubbleSize = d3.scaleLinear()
+        .domain([0, d3.max(scatterData, d => d.sales)])
+        .range([5, 25]);
 
+    // Add X axis
+    svg.append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(d3.axisBottom(x).ticks(5))
+        .call(g => g.select(".domain").remove())
+        .selectAll("text")
+        .style("font-size", "12px");
+
+    // Add Y axis
     svg.append("g")
         .call(d3.axisLeft(y))
-        .style("opacity", 0)
-        .transition()
-        .duration(1000)
-        .style("opacity", 1);
+        .call(g => g.select(".domain").remove());
 
     // Add axes labels
     addAxesLabels(svg, "Number of Games", "Global Sales (millions)");
 
-    // Add scatter points with animations
-    svg.selectAll("circle")
+    // Add interactive bubbles
+    svg.selectAll(".bubble")
         .data(scatterData)
         .enter()
         .append("circle")
+        .attr("class", "bubble")
         .attr("cx", d => x(d.count))
-        .attr("cy", height) // Start from bottom
-        .attr("r", 0) // Start with radius 0
+        .attr("cy", height) // Start from bottom for animation
+        .attr("r", d => bubbleSize(d.sales))
         .attr("fill", "#8B0000")
         .attr("opacity", 0.7)
         .on("mouseover", function (event, d) {
-            // Enhanced point animation
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("r", 12)
+                .attr("r", d => bubbleSize(d.sales) * 1.2)
                 .attr("fill", "#FF4444")
-                .attr("opacity", 1);
+                .attr("opacity", 0.9);
 
-            // Calculate genre-specific statistics
+            // Find top game and best publisher for this genre
             const genreGames = data.filter(game => game.Genre === d.genre);
-            const topGame = genreGames.reduce((prev, current) =>
-                (prev.Global_Sales > current.Global_Sales) ? prev : current);
-            const topPublisher = d3.rollup(genreGames,
-                v => d3.sum(v, d => d.Global_Sales),
-                d => d.Publisher);
-            const bestPublisher = Array.from(topPublisher, ([pub, sales]) => ({ pub, sales }))
-                .sort((a, b) => b.sales - a.sales)[0];
+            const topGame = genreGames.sort((a, b) => b.Global_Sales - a.Global_Sales)[0];
+            const publisherCounts = d3.rollup(genreGames, v => v.length, g => g.Publisher);
+            const bestPublisher = Array.from(publisherCounts, ([pub, count]) => ({ pub, count }))
+                .sort((a, b) => b.count - a.count)[0];
 
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", .9);
-            tooltip.html(`
+            // Calculate market share
+            const totalSales = d3.sum(scatterData, d => d.sales);
+
+            // Use the global showTooltip function
+            showTooltip(event, d, `
                 <div class="tooltip-header">
                     <strong>${d.genre}</strong>
+                    <span class="market-share">${(d.sales / totalSales * 100).toFixed(1)}% of Market</span>
                 </div>
                 <div class="tooltip-content">
                     <div class="tooltip-section">
                         <div class="stat-row">
                             <span class="stat-label">Total Sales:</span>
                             <span class="stat-value">${d.sales.toFixed(2)}M</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Market Share:</span>
-                            <span class="stat-value">${(d.sales / totalSales * 100).toFixed(1)}%</span>
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Number of Games:</span>
@@ -694,30 +724,24 @@ function createGenreChart(data) {
                         </div>
                     </div>
                 </div>
-                <div class="tooltip-footer">
-                    <span class="tooltip-hint">Click for genre analysis</span>
-                </div>
-            `)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 28) + "px");
+            `);
         })
         .on("mouseout", function () {
             d3.select(this)
                 .transition()
                 .duration(200)
-                .attr("r", 8)
+                .attr("r", d => bubbleSize(d.sales))
                 .attr("fill", "#8B0000")
                 .attr("opacity", 0.7);
 
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
+            // Use the global hideTooltip function
+            hideTooltip();
         })
         .transition()
         .duration(1000)
         .delay((d, i) => i * 100)
         .attr("cy", d => y(d.sales))
-        .attr("r", 8);
+        .attr("r", d => bubbleSize(d.sales));
 
     // Add genre labels
     svg.selectAll(".genre-label")
@@ -920,4 +944,127 @@ function getBestPublisherForGenre(genre) {
         .sort((a, b) => b[1] - a[1])[0];
 
     return bestPub ? { pub: bestPub[0], sales: bestPub[1] } : { pub: 'N/A', sales: 0 };
+}
+
+// Helper functions for advanced tooltip data
+function getIndustryTrend(year) {
+    // Map years to industry phases
+    if (year < 1985) return { phase: "Early Industry Formation", trend: "Emerging" };
+    if (year < 1990) return { phase: "Post-Crash Recovery", trend: "Rebuilding" };
+    if (year < 1995) return { phase: "16-bit Console Era", trend: "Competitive" };
+    if (year < 2000) return { phase: "3D Revolution", trend: "Innovative" };
+    if (year < 2005) return { phase: "6th Generation Consoles", trend: "Expanding" };
+    if (year < 2010) return { phase: "7th Generation Consoles", trend: "Mainstream" };
+    if (year < 2015) return { phase: "Mobile Disruption", trend: "Diversifying" };
+    return { phase: "Modern Gaming Era", trend: "Consolidated" };
+}
+
+function getPlatformDistribution(year) {
+    // Simplified platform market share data
+    if (year < 1985) return { topShare: 65, platforms: ["Atari", "Commodore"] };
+    if (year < 1990) return { topShare: 85, platforms: ["NES", "Master System"] };
+    if (year < 1995) return { topShare: 60, platforms: ["SNES", "Genesis"] };
+    if (year < 2000) return { topShare: 70, platforms: ["PlayStation", "N64"] };
+    if (year < 2005) return { topShare: 55, platforms: ["PS2", "Xbox", "GameCube"] };
+    if (year < 2010) return { topShare: 45, platforms: ["Wii", "Xbox 360", "PS3"] };
+    if (year < 2015) return { topShare: 35, platforms: ["PS3", "Xbox 360", "Mobile"] };
+    return { topShare: 30, platforms: ["PS4", "Xbox One", "Switch", "Mobile"] };
+}
+
+function getTopPublishers(year) {
+    // Simplified top publishers by era
+    if (year < 1985) return ["Atari", "Activision"];
+    if (year < 1990) return ["Nintendo", "Sega"];
+    if (year < 1995) return ["Nintendo", "Sega", "Capcom"];
+    if (year < 2000) return ["Nintendo", "Sony", "Electronic Arts"];
+    if (year < 2005) return ["Electronic Arts", "Sony", "Nintendo"];
+    if (year < 2010) return ["Electronic Arts", "Activision", "Ubisoft"];
+    if (year < 2015) return ["Activision Blizzard", "Electronic Arts", "Ubisoft"];
+    return ["Activision Blizzard", "Electronic Arts", "Take-Two Interactive"];
+}
+
+function getCriticalTitles(year) {
+    // Simplified landmark titles by year
+    const titles = {
+        1985: ["Super Mario Bros.", "Duck Hunt"],
+        1986: ["The Legend of Zelda", "Metroid"],
+        1991: ["Sonic the Hedgehog", "Street Fighter II"],
+        1996: ["Super Mario 64", "Resident Evil"],
+        1997: ["Final Fantasy VII", "GoldenEye 007"],
+        1998: ["The Legend of Zelda: Ocarina of Time", "Metal Gear Solid"],
+        2001: ["Halo: Combat Evolved", "Grand Theft Auto III"],
+        2004: ["Half-Life 2", "World of Warcraft"],
+        2007: ["Call of Duty 4: Modern Warfare", "BioShock"],
+        2011: ["The Elder Scrolls V: Skyrim", "Portal 2"],
+        2013: ["Grand Theft Auto V", "The Last of Us"],
+        2015: ["The Witcher 3: Wild Hunt", "Bloodborne"],
+        2017: ["The Legend of Zelda: Breath of the Wild", "Horizon Zero Dawn"],
+        2018: ["Red Dead Redemption 2", "God of War"],
+        2020: ["Animal Crossing: New Horizons", "The Last of Us Part II"]
+    };
+
+    // Return titles for the exact year or closest previous year with data
+    for (let y = year; y >= year - 2; y--) {
+        if (titles[y]) return titles[y];
+    }
+    return ["No landmark titles recorded"];
+}
+
+function getHistoricalSignificance(year) {
+    // Provide historical context for gaming industry
+    const events = {
+        1983: "Video game crash in North America",
+        1985: "Nintendo revitalized the industry with the NES",
+        1989: "Game Boy launched, revolutionizing handheld gaming",
+        1991: "Sonic the Hedgehog established Sega as Nintendo's rival",
+        1994: "PlayStation entered the market, shifting to CD-ROM format",
+        1996: "3D gaming became mainstream with Nintendo 64 and PlayStation",
+        2000: "PlayStation 2 launched, eventually becoming best-selling console",
+        2001: "Xbox entered the market, intensifying console competition",
+        2004: "World of Warcraft launched, defining MMO genre",
+        2006: "Nintendo Wii introduced motion controls to mainstream",
+        2007: "Mobile gaming began expansion with iPhone",
+        2009: "Indie game development surged with digital distribution",
+        2011: "Free-to-play and games-as-service models gained prominence",
+        2013: "PS4 and Xbox One launched, emphasizing online connectivity",
+        2016: "VR gaming entered consumer market",
+        2017: "Nintendo Switch blurred lines between home and portable gaming",
+        2020: "Next-gen consoles launched during global pandemic"
+    };
+
+    // Return event for the exact year or general trend
+    if (events[year]) return events[year];
+
+    if (year < 1985) return "Early industry formation period";
+    if (year < 1990) return "Post-crash recovery and 8-bit console dominance";
+    if (year < 1995) return "16-bit console wars era";
+    if (year < 2000) return "Transition to 3D gaming and CD-ROM media";
+    if (year < 2005) return "Sixth generation console competition";
+    if (year < 2010) return "Casual gaming expansion and HD gaming";
+    if (year < 2015) return "Digital distribution and mobile disruption";
+    return "Modern gaming era with service-based models";
+}
+
+function calculateFiveYearTrend(year, data) {
+    // Find data from 5 years ago
+    const currentYearData = data.find(d => d.year === year);
+    const fiveYearsAgo = data.find(d => d.year === year - 5);
+
+    if (currentYearData && fiveYearsAgo) {
+        const growthRate = ((currentYearData.sales - fiveYearsAgo.sales) / fiveYearsAgo.sales * 100).toFixed(1);
+        return growthRate;
+    }
+    return "N/A";
+}
+
+function getMarketContext(year) {
+    // Provide market context based on year
+    if (year < 1985) return "Pre-crash recovery period";
+    if (year < 1990) return "Nintendo-dominated market";
+    if (year < 1995) return "Nintendo-Sega console war";
+    if (year < 2000) return "PlayStation disruption";
+    if (year < 2005) return "PS2 dominance era";
+    if (year < 2010) return "Three-way console competition";
+    if (year < 2015) return "Mobile expansion period";
+    return "Digital-first marketplace";
 }

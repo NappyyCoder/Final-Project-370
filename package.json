@@ -1,0 +1,21 @@
+{
+  "name": "video-game-visualization",
+  "version": "1.0.0",
+  "description": "Video game sales visualization",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "visualization",
+    "d3",
+    "games"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^4.5.0"
+  }
+}
