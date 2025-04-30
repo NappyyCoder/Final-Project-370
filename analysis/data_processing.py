@@ -165,13 +165,13 @@ plt.savefig('../analysis/figures/sales_trend.png')
 print("Generated sales trend visualization")
 
 # 6.2 Genre distribution
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(12, 8))  # Increased height
 sns.barplot(data=genre_analysis.head(10), x='Genre', y='Total_Sales')
 plt.title('Top 10 Genres by Global Sales')
 plt.xlabel('Genre')
 plt.ylabel('Global Sales (millions)')
-plt.xticks(rotation=45)
-plt.tight_layout()
+plt.xticks(rotation=45, ha='right')  # Rotated labels with horizontal alignment
+plt.tight_layout(pad=2.0)  # Added padding
 plt.savefig('../analysis/figures/genre_sales.png')
 print("Generated genre distribution visualization")
 
@@ -185,11 +185,13 @@ plt.savefig('../analysis/figures/publisher_share.png')
 print("Generated publisher market share visualization")
 
 # 6.4 Regional sales comparison
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(12, 7))
 regions = ['NA_Sales', 'EU_Sales', 'JP_Sales', 'Other_Sales']
 plt.bar(regions, [regional_totals[r] for r in regions])
 plt.title('Sales by Region')
 plt.ylabel('Sales (millions)')
+plt.xticks(rotation=30, ha='right')  # Rotated labels
+plt.tight_layout(pad=2.0)  # Added padding
 plt.savefig('../analysis/figures/regional_sales.png')
 print("Generated regional sales visualization")
 

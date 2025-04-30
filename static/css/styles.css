@@ -139,6 +139,8 @@ main {
     transition: var(--transition-normal);
     position: relative;
     overflow: hidden;
+    min-height: 500px;
+    /* Increased from default */
 }
 
 .visualization:hover {
@@ -202,7 +204,8 @@ main {
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: var(--shadow-inner);
-    min-height: 400px;
+    min-height: 500px;
+    /* Increased from 400px */
     position: relative;
 }
 
@@ -210,6 +213,8 @@ main {
 svg {
     max-width: 100%;
     height: auto;
+    min-height: 450px;
+    /* Added minimum height */
 }
 
 .axis-label,
@@ -636,35 +641,36 @@ svg {
     margin-bottom: 1rem;
 }
 
+.insights-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
 .key-insights {
     background: rgba(139, 0, 0, 0.05);
     padding: 1.5rem;
     border-radius: 8px;
-    margin: 1.5rem 0;
-}
-
-.key-insights ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-.key-insights li {
-    margin-bottom: 0.5rem;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.key-insights li:before {
-    content: "•";
-    color: var(--primary-color);
-    position: absolute;
-    left: 0;
+    margin: 0;
 }
 
 .analysis-notes {
-    margin-top: 2rem;
+    margin: 0;
     padding: 1.5rem;
-    border-top: 2px solid rgba(139, 0, 0, 0.1);
+    border-left: 2px solid rgba(139, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .insights-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .analysis-notes {
+        border-left: none;
+        border-top: 2px solid rgba(139, 0, 0, 0.1);
+    }
 }
 
 /* Genre chart specific styles */
@@ -1065,4 +1071,75 @@ circle:hover {
     display: flex;
     flex-direction: column;
     font-size: 13px;
+}
+
+/* Visualization container for side-by-side layout */
+.visualization-container {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    /* Changed from 4fr 1fr to give less space to the graph */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    min-height: 550px;
+    /* Reduced from 600px */
+}
+
+/* Chart container size adjustments */
+.visualization-container .chart-container {
+    min-height: 450px;
+    /* Reduced from 500px */
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.visualization-container .visualization {
+    min-height: 450px;
+    /* Reduced from 500px */
+}
+
+/* Sidebar insights styling */
+.sidebar-insights {
+    background: rgba(139, 0, 0, 0.05);
+    padding: 1.5rem;
+    border-radius: 8px;
+    align-self: start;
+    max-height: 550px;
+    /* Reduced from 600px */
+    overflow-y: auto;
+    font-size: 0.9rem;
+    /* Slightly smaller font size */
+}
+
+.sidebar-insights h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    border-bottom: 1px solid rgba(139, 0, 0, 0.2);
+    padding-bottom: 0.5rem;
+    font-size: 1.2rem;
+    /* Slightly smaller heading */
+}
+
+.sidebar-insights ul {
+    padding-left: 1.2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-insights li {
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+    /* Slightly smaller font size */
+    line-height: 1.3;
+    /* Tighter line height */
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .visualization-container {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar-insights {
+        max-height: none;
+    }
 }

@@ -1,5 +1,5 @@
 // Global configurations
-const margin = { top: 80, right: 100, bottom: 80, left: 90 };
+const margin = { top: 80, right: 100, bottom: 150, left: 90 }; // Significantly increased bottom margin
 const width = 1100 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
@@ -105,11 +105,14 @@ function createResponsiveChart(selector) {
 function addAxesLabels(svg, xLabel, yLabel) {
     // X-axis label
     svg.append("text")
-        .attr("class", "axis-label")
+        .attr("class", "x-axis-label")
         .attr("x", width / 2)
-        .attr("y", height + margin.bottom - 10)
+        .attr("y", height + 50)  // Increased y position to avoid being cut off
         .attr("text-anchor", "middle")
         .text(xLabel)
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("fill", "#333")
         .style("opacity", 0)
         .transition()
         .duration(1000)
@@ -117,12 +120,15 @@ function addAxesLabels(svg, xLabel, yLabel) {
 
     // Y-axis label
     svg.append("text")
-        .attr("class", "axis-label")
+        .attr("class", "y-axis-label")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
-        .attr("y", -margin.left + 20)
+        .attr("y", -60)  // Increased space on the left to prevent cutting off
         .attr("text-anchor", "middle")
         .text(yLabel)
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("fill", "#333")
         .style("opacity", 0)
         .transition()
         .duration(1000)
@@ -213,7 +219,7 @@ function createPublisherChart(data) {
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x))
         .selectAll("text")
-        .attr("transform", "rotate(-45)")
+        .attr("transform", "translate(-10,0)rotate(-45)")
         .style("text-anchor", "end")
         .style("opacity", 0)
         .transition()
@@ -229,7 +235,7 @@ function createPublisherChart(data) {
 
     // Add axes labels with animation
     const labels = [
-        { text: "Publishers", x: width / 2, y: height + 60 },
+        { text: "Publishers", x: width / 2, y: height + 120 }, // Much larger y position
         { text: "Global Sales (millions)", x: -height / 2, y: -60, rotate: -90 }
     ];
 
@@ -455,20 +461,34 @@ function createTimelineChart(data) {
 
     // Add X axis label
     svg.append("text")
-        .attr("text-anchor", "middle")
+        .attr("class", "x-axis-label")
         .attr("x", width / 2)
-        .attr("y", height + 60)
-        .text("Year")
-        .style("font-size", "14px");
+        .attr("y", height + 50)
+        .attr("text-anchor", "middle")
+        .text("Number of Games")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("fill", "#333")
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
 
     // Add Y axis label
     svg.append("text")
-        .attr("text-anchor", "middle")
+        .attr("class", "y-axis-label")
         .attr("transform", "rotate(-90)")
-        .attr("y", -60)
         .attr("x", -height / 2)
+        .attr("y", -60)
+        .attr("text-anchor", "middle")
         .text("Global Sales (millions)")
-        .style("font-size", "14px");
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("fill", "#333")
+        .style("opacity", 0)
+        .transition()
+        .duration(1000)
+        .style("opacity", 1);
 
     // Add title
     svg.append("text")
@@ -602,17 +622,22 @@ function createTimelineChart(data) {
 
 // Create genre chart with animations
 function createGenreChart(data) {
-    const svg = createResponsiveChart("#visualization-2");
+    // Clear any existing chart
+    d3.select("#visualization-2").html("");
 
-    // Add chart title
-    svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", width / 2)
-        .attr("y", -margin.top / 2)
-        .attr("text-anchor", "middle")
-        .text("Video Game Genres Analysis")
-        .style("font-size", "24px")
-        .style("font-weight", "bold");
+    // Set up dimensions with explicit values - reduced width and height
+    const margin = { top: 60, right: 40, bottom: 60, left: 80 };
+    const width = 700 - margin.left - margin.right; // Reduced from 900
+    const height = 450 - margin.top - margin.bottom; // Reduced from 500
+
+    // Create SVG with proper dimensions and responsive viewBox
+    const svg = d3.select("#visualization-2")
+        .append("svg")
+        .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+        .attr("width", "100%") // Make it responsive
+        .attr("height", "100%") // Make it responsive
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // Process data for genres
     const genreData = d3.rollup(data,
@@ -629,35 +654,54 @@ function createGenreChart(data) {
         count: values.count
     }));
 
-    // Create scales
+    // Create scales with proper domains
     const x = d3.scaleLinear()
-        .domain([0, d3.max(scatterData, d => d.count)])
+        .domain([0, d3.max(scatterData, d => d.count) * 1.1])
         .range([0, width]);
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max(scatterData, d => d.sales)])
+        .domain([0, d3.max(scatterData, d => d.sales) * 1.1])
         .range([height, 0]);
+
+    // Add axes
+    svg.append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(d3.axisBottom(x));
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    // Add chart title
+    svg.append("text")
+        .attr("class", "chart-title")
+        .attr("x", width / 2)
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "middle")
+        .text("Video Game Genres Analysis")
+        .style("font-size", "24px")
+        .style("font-weight", "bold");
+
+    // Add axes labels
+    addAxesLabels(svg, "Number of Games", "Global Sales (millions)");
+
+    // Add a direct x-axis label that will definitely show up
+    svg.append("text")
+        .attr("class", "x-axis-label-fixed")
+        .attr("x", width / 2)
+        .attr("y", height + 60)
+        .attr("text-anchor", "middle")
+        .text("Number of Games")
+        .style("font-size", "18px")
+        .style("font-weight", "bold")
+        .style("fill", "#333");
 
     // Define bubble size scale
     const bubbleSize = d3.scaleLinear()
         .domain([0, d3.max(scatterData, d => d.sales)])
         .range([5, 25]);
 
-    // Add X axis
-    svg.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(d3.axisBottom(x).ticks(5))
-        .call(g => g.select(".domain").remove())
-        .selectAll("text")
-        .style("font-size", "12px");
-
-    // Add Y axis
-    svg.append("g")
-        .call(d3.axisLeft(y))
-        .call(g => g.select(".domain").remove());
-
-    // Add axes labels
-    addAxesLabels(svg, "Number of Games", "Global Sales (millions)");
+    // Calculate peak year for each genre
+    const genrePeakYears = calculatePeakYears(data);
 
     // Add interactive bubbles
     svg.selectAll(".bubble")
@@ -665,83 +709,77 @@ function createGenreChart(data) {
         .enter()
         .append("circle")
         .attr("class", "bubble")
-        .attr("cx", d => x(d.count))
-        .attr("cy", height) // Start from bottom for animation
-        .attr("r", d => bubbleSize(d.sales))
-        .attr("fill", "#8B0000")
-        .attr("opacity", 0.7)
+        .attr("cx", d => x(d.count))  // Position bubbles horizontally based on game count
+        .attr("cy", d => y(d.sales))  // Position bubbles vertically based on sales
+        .attr("r", d => bubbleSize(d.sales))  // Size bubbles based on sales volume
+        .attr("fill", "#8B0000")  // Dark red base color for all bubbles
+        .attr("opacity", 0.7)  // Slight transparency for better overlapping visibility
         .on("mouseover", function (event, d) {
+            // INTERACTION 1: Visual feedback when user hovers over a bubble
             d3.select(this)
                 .transition()
-                .duration(200)
-                .attr("r", d => bubbleSize(d.sales) * 1.2)
-                .attr("fill", "#FF4444")
-                .attr("opacity", 0.9);
+                .duration(200)  // Smooth 200ms animation
+                .attr("r", d => bubbleSize(d.sales) * 1.2)  // Increase size by 20%
+                .attr("fill", "#FF4444")  // Change to brighter red on hover
+                .attr("opacity", 0.9);  // Increase opacity for emphasis
 
-            // Find top game and best publisher for this genre
-            const genreGames = data.filter(game => game.Genre === d.genre);
-            const topGame = genreGames.sort((a, b) => b.Global_Sales - a.Global_Sales)[0];
-            const publisherCounts = d3.rollup(genreGames, v => v.length, g => g.Publisher);
-            const bestPublisher = Array.from(publisherCounts, ([pub, count]) => ({ pub, count }))
-                .sort((a, b) => b.count - a.count)[0];
-
-            // Calculate market share
-            const totalSales = d3.sum(scatterData, d => d.sales);
-
-            // Use the global showTooltip function
-            showTooltip(event, d, `
+            // INTERACTION 2: Informative tooltip showing genre details
+            const tooltipContent = `
                 <div class="tooltip-header">
-                    <strong>${d.genre}</strong>
-                    <span class="market-share">${(d.sales / totalSales * 100).toFixed(1)}% of Market</span>
+                    <strong>${d.genre}</strong>  <!-- Genre name as header -->
                 </div>
                 <div class="tooltip-content">
                     <div class="tooltip-section">
                         <div class="stat-row">
                             <span class="stat-label">Total Sales:</span>
-                            <span class="stat-value">${d.sales.toFixed(2)}M</span>
+                            <span class="stat-value">${d.sales.toFixed(2)}M</span>  <!-- Sales in millions -->
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Number of Games:</span>
-                            <span class="stat-value">${d.count}</span>
+                            <span class="stat-value">${d.count}</span>  <!-- Total games in this genre -->
                         </div>
                         <div class="stat-row">
                             <span class="stat-label">Avg Sales/Game:</span>
-                            <span class="stat-value">${(d.sales / d.count).toFixed(2)}M</span>
-                        </div>
-                    </div>
-                    <div class="tooltip-section">
-                        <div class="stat-row">
-                            <span class="stat-label">Top Game:</span>
-                            <span class="stat-value">${topGame.Name}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Best Publisher:</span>
-                            <span class="stat-value">${bestPublisher.pub}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Peak Year:</span>
-                            <span class="stat-value">${d.peakYear || 'N/A'}</span>
+                            <span class="stat-value">${(d.sales / d.count).toFixed(2)}M</span>  <!-- Average performance metric -->
                         </div>
                     </div>
                 </div>
-            `);
+            `;
+
+            // Show tooltip with animation
+            tooltip.transition()
+                .duration(200)  // Fade in over 200ms
+                .style("opacity", 0.98);  // Nearly fully opaque
+
+            // Position tooltip near cursor but not covering it
+            tooltip.html(tooltipContent)
+                .style("left", (event.pageX + 15) + "px")  // 15px right of cursor
+                .style("top", (event.pageY - 10) + "px");  // 10px above cursor
         })
         .on("mouseout", function () {
+            // INTERACTION 3: Reset visual state when user moves away
             d3.select(this)
                 .transition()
-                .duration(200)
-                .attr("r", d => bubbleSize(d.sales))
-                .attr("fill", "#8B0000")
-                .attr("opacity", 0.7);
+                .duration(200)  // Smooth 200ms animation back to normal
+                .attr("r", d => bubbleSize(d.sales))  // Return to original size
+                .attr("fill", "#8B0000")  // Return to original color
+                .attr("opacity", 0.7);  // Return to original opacity
 
-            // Use the global hideTooltip function
-            hideTooltip();
+            // Hide tooltip with fade-out animation
+            tooltip.transition()
+                .duration(200)  // Fade out over 200ms
+                .style("opacity", 0);  // Fully transparent
+        })
+        .on("mousemove", function (event) {
+            // INTERACTION 4: Tooltip follows cursor for better user experience
+            tooltip
+                .style("left", (event.pageX + 15) + "px")  // Keep 15px right of cursor
+                .style("top", (event.pageY - 10) + "px");  // Keep 10px above cursor
         })
         .transition()
         .duration(1000)
         .delay((d, i) => i * 100)
-        .attr("cy", d => y(d.sales))
-        .attr("r", d => bubbleSize(d.sales));
+        .attr("r", d => bubbleSize(d.sales));  // Animate only the radius
 
     // Add genre labels
     svg.selectAll(".genre-label")
@@ -927,13 +965,13 @@ function getMarketContext(year) {
     return "Limited market data available";
 }
 
-function getTopGameForGenre(genre) {
+function getTopGameForGenre(genre, data) {
     return data
         .filter(d => d.Genre === genre)
         .sort((a, b) => b.Global_Sales - a.Global_Sales)[0] || { Name: 'N/A' };
 }
 
-function getBestPublisherForGenre(genre) {
+function getBestPublisherForGenre(genre, data) {
     const publishers = d3.rollup(
         data.filter(d => d.Genre === genre),
         v => d3.sum(v, d => d.Global_Sales),
@@ -1067,4 +1105,56 @@ function getMarketContext(year) {
     if (year < 2010) return "Three-way console competition";
     if (year < 2015) return "Mobile expansion period";
     return "Digital-first marketplace";
+}
+
+// Calculate peak year for each genre
+function calculatePeakYears(data) {
+    const genrePeakYears = {};
+
+    // Group data by genre and year
+    const genreYearData = d3.rollup(data,
+        v => d3.sum(v, d => d.Global_Sales),
+        d => d.Genre,
+        d => d.Year
+    );
+
+    // Find peak year for each genre
+    for (const [genre, yearData] of genreYearData.entries()) {
+        let maxSales = 0;
+        let peakYear = null;
+
+        for (const [year, sales] of yearData.entries()) {
+            if (sales > maxSales) {
+                maxSales = sales;
+                peakYear = year;
+            }
+        }
+
+        genrePeakYears[genre] = peakYear;
+    }
+
+    return genrePeakYears;
+}
+
+// Add the getPeakYearForGenre function
+function getPeakYearForGenre(genre, data) {
+    // Group data by year for the specific genre
+    const yearData = d3.rollup(
+        data.filter(d => d.Genre === genre && d.Year != null),
+        v => d3.sum(v, d => d.Global_Sales),
+        d => d.Year
+    );
+
+    // Find the year with maximum sales
+    let maxSales = 0;
+    let peakYear = null;
+
+    for (const [year, sales] of yearData.entries()) {
+        if (sales > maxSales) {
+            maxSales = sales;
+            peakYear = year;
+        }
+    }
+
+    return peakYear || 'N/A';
 }
