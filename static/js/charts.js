@@ -654,6 +654,27 @@ function createGenreChart(data) {
         count: values.count
     }));
 
+    // Calculate total sales for market share percentage
+    const totalSales = d3.sum(scatterData, d => d.sales);
+
+    // Calculate peak years for each genre
+    const genrePeakYears = {};
+    data.forEach(d => {
+        if (d.Year && d.Genre) {
+            if (!genrePeakYears[d.Genre]) {
+                genrePeakYears[d.Genre] = getPeakYearForGenre(d.Genre, data);
+            }
+        }
+    });
+
+    // Function to calculate success rate for a genre
+    function calculateSuccessRate(genre) {
+        const genreGames = data.filter(d => d.Genre === genre);
+        const avgSales = d3.mean(genreGames, d => d.Global_Sales);
+        const successfulGames = genreGames.filter(d => d.Global_Sales > avgSales).length;
+        return Math.round((successfulGames / genreGames.length) * 100);
+    }
+
     // Create scales with proper domains
     const x = d3.scaleLinear()
         .domain([0, d3.max(scatterData, d => d.count) * 1.1])
@@ -700,9 +721,6 @@ function createGenreChart(data) {
         .domain([0, d3.max(scatterData, d => d.sales)])
         .range([5, 25]);
 
-    // Calculate peak year for each genre
-    const genrePeakYears = calculatePeakYears(data);
-
     // Add interactive bubbles
     svg.selectAll(".bubble")
         .data(scatterData)
@@ -742,19 +760,24 @@ function createGenreChart(data) {
                             <span class="stat-label">Avg Sales/Game:</span>
                             <span class="stat-value">${(d.sales / d.count).toFixed(2)}M</span>  <!-- Average performance metric -->
                         </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Market Share:</span>
+                            <span class="stat-value">${(d.sales / totalSales * 100).toFixed(1)}%</span>  <!-- Market percentage -->
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Peak Year:</span>
+                            <span class="stat-value">${genrePeakYears[d.genre] || 'N/A'}</span>  <!-- Year of highest sales -->
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Success Rate:</span>
+                            <span class="stat-value">${calculateSuccessRate(d.genre)}%</span>  <!-- Percentage of games above average -->
+                        </div>
                     </div>
                 </div>
             `;
 
             // Show tooltip with animation
-            tooltip.transition()
-                .duration(200)  // Fade in over 200ms
-                .style("opacity", 0.98);  // Nearly fully opaque
-
-            // Position tooltip near cursor but not covering it
-            tooltip.html(tooltipContent)
-                .style("left", (event.pageX + 15) + "px")  // 15px right of cursor
-                .style("top", (event.pageY - 10) + "px");  // 10px above cursor
+            showTooltip(event, d, tooltipContent);
         })
         .on("mouseout", function () {
             // INTERACTION 3: Reset visual state when user moves away
